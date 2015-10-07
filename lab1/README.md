@@ -1,10 +1,13 @@
 ## cs640lab1 - build your own smart switch with switchyard
 
-## CS640 2015 Fall
-## Team: Yunhe Liu, Xuyi Ruan
+### CS640 2015 Fall
+### Team: [Yunhe Liu](https://github.com/yunheL), [Xuyi Ruan](https://github.com/ruanxuyi)
 
 
 ## TODO: 
+1. forward packet to know port mapped from the source address.
+2. implement code for learning new incoming packet - add (source address, port) to the forward table
+3. code up various test scripts for the smart switch.
 
 
 ## Counter Issues: 
