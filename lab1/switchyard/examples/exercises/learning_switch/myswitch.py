@@ -28,7 +28,6 @@ def switchy_main(net):
             log_debug ("Packet intended for me")
         else:
             for intf in my_interfaces:
-                # send to all other ports except the port that received the packet.
                 if dev != intf.name:
                     log_debug ("Flooding packet {} to {}".format(packet, intf.name))
                     net.send_packet(intf.name, packet)
