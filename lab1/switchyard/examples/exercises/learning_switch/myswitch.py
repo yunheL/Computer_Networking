@@ -14,7 +14,7 @@ from switchyard.lib.common import *
 def switchy_main(net):
     my_interfaces = net.interfaces() 
     mymacs = [intf.ethaddr for intf in my_interfaces]
-
+    print ("test for new branch")
     while True:
         try:
             dev,packet = net.recv_packet()
