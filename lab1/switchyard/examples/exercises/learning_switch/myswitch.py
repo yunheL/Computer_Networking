@@ -20,24 +20,23 @@ def switchy_main(net):
     # - intf.ethaddr -> mac address
     # - intf.name -> port/interface (eth0, eth1, etc)
     # - intf.netmask - network mask associated with the IPv4 address
-    mymacs = [intf.ethaddr for intf in my_interfaces]
+    mymacs = [intf.ethaddr.toStr() for intf in my_interfaces]
     
     # ?? intf.ethaddr is a ethaddr instance [Ethernet (ixx,xx,xx,x,x)]
-    '''
+    ''' 
     for intf in my_interfaces:
-        log_info(dir(intf.ethaddr)), exit()
+        print(dir(intf.ethaddr), exit())
     '''
+
     print ("mymacs: ", mymacs)
     # TODO: construct a dict with <ethaddr : port> pair
-    forwardList = dict([(intf.ethaddr, intf.name) for intf in my_interfaces])
+    forwardList = dict([(intf.ethaddr.toStr(), intf.name) for intf in my_interfaces])
+    print ("forwardList", forwardList)
     while True:
         try:
             # dev -> device name
             # packet -> packet receive
-            log_info("yes")
-            print ("YES2")
             dev,packet = net.recv_packet()
-            print ("YES")
         except NoPackets:
             continue
         except Shutdown:
@@ -46,17 +45,25 @@ def switchy_main(net):
         log_debug ("In {} received packet {} on {}".format(net.name, packet, dev))
         # log_debug ("I am here!")
         # TODO: if the source MAC addr. not seen before, add it to the forward table.
-        srcAddr = packet[0].src
+        srcAddr = packet[0].src.toStr()
         if srcAddr not in mymacs:
+            print ("src addr. not in forward table, add", srcAddr , "to table")
             forwardList[srcAddr] = dev
-        
-        if packet[0].dst in mymacs:
-        # packet[0] - header for the packet
-        # other data in the header: dst, src, ethertype
+            # update mymacs list
+            mymacs.append(srcAddr)
+        print ("src: ", packet[0].src)
+        print ("dst: ", packet[0].dst)
+        print ("forwardList: ", forwardList)
+        if packet[0].dst.toStr() in mymacs:
+            print ("packet with dst: ", packet[0].dst, " recognized by forwrad table")
+            # packet[0] - header for the packet
+            # other data in the header: dst, src, ethertype
             log_debug ("Packet intended for me")
             # TODO: look up port for dst addr. and forward the packet to that port.
-            net.send_packet(forwardList[packet[0].dst], packet)
+            print ("send packet to ", forwardList[packet[0].dst.toStr()], "interface")
+            net.send_packet(forwardList[packet[0].dst.toStr()], packet)
         else:
+            print ("packet with dst: ", packet[0].dst, " NOT recognized by forwrad table. broadcast the packet")
             for intf in my_interfaces:
                 if dev != intf.name:
                     log_debug ("Flooding packet {} to {}".format(packet, intf.name))
