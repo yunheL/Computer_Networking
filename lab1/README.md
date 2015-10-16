@@ -9,7 +9,7 @@
 ~~2. implement code for learning new incoming packet - add (source address, port) to the forward table~~
 3. code up various test scripts for the smart switch.
 ~~4. implemented code for `time_out` function~~
-5. to fix the issue of `time_out` function thread keep running, after return from main function.
+~~5. to fix the issue of `time_out` function thread keep running, after return from main function.~~
 
 
 
@@ -47,6 +47,13 @@ then run:
 
 now everthing should work.
 
+
+### how to stop new thread when main function return. 
+
+### Solution: 
+simply use the python buildin function to detect if thread for main function still alive: 
+
+	`threading.main_thread().is_alive()` will do the job.
 
 
 ## References:

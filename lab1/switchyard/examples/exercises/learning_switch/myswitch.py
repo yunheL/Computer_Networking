@@ -15,34 +15,15 @@ import time
 
 forwardList = {}
 time_thread = threading.Timer(None, None)
-exit = False
 
 def switchy_main(net):
     my_interfaces = net.interfaces() 
-    # interface() returns list of interface object.
-    # mymacs holds all the MAC addrs stored in current network device
-    # strcture for interface object: 
-    # - intf.ipaddr -> ip address assoicate with the interface (IPv4Address object)
-    # - intf.ethaddr -> mac address
-    # - intf.name -> port/interface (eth0, eth1, etc)
-    # - intf.netmask - network mask associated with the IPv4 address
-    #mymacs = [intf.ethaddr.toStr() for intf in my_interfaces]
-    
-    # ?? intf.ethaddr is a ethaddr instance [Ethernet (ixx,xx,xx,x,x)]
-    ''' 
-    for intf in my_interfaces:
-        print(dir(intf.ethaddr), exit())
-    '''
-
-    #print ("mymacs: ", mymacs)
     # TODO: construct a dict with <ethaddr : port> pair
     global forwardList, time_thread, exit
-    forwardList = dict([(intf.ethaddr.toStr(), [intf.name, currnt_time_in_sec()+30]) for intf in my_interfaces])
-    #print ("forwardList", forwardList)
-    
+    forwardList = dict([(intf.ethaddr.toStr(), [intf.name, currnt_time_in_sec()+30]) for intf in my_interfaces]) 
     # call timeout functiion
     timeout()
-
+    print ("main thread: ", threading.get_ident())
     while True:
         try:
             # dev -> device name
@@ -54,19 +35,11 @@ def switchy_main(net):
             return
 
         log_debug ("In {} received packet {} on {}".format(net.name, packet, dev))
-        # log_debug ("I am here!")
         # TODO: if the source MAC addr. not seen before, add it to the forward table.
+        print ("main thread: ", threading.get_ident())
         srcAddr = packet[0].src.toStr()
         if srcAddr not in forwardList:
-            #print ("src addr. not in forward table, add", srcAddr , "to table")
-            print ("curren Time: ", currnt_time_in_sec())
             forwardList[srcAddr] = [dev, currnt_time_in_sec()+30]
-            # update mymacs list
-            print ("updated list: ", forwardList)
-            #mymacs.append(srcAddr)
-        #print ("src: ", packet[0].src)
-        #print ("dst: ", packet[0].dst)
-        #print ("forwardList: ", forwardList)
         if packet[0].dst.toStr() in forwardList:
             print ("packet with dst: ", packet[0].dst, " recognized by forwrad table")
             # packet[0] - header for the packet
@@ -84,19 +57,18 @@ def switchy_main(net):
     # exit = True
     net.shutdown()
 
-
 def timeout():
-    global time_thread, forwardList, exit
-    print (forwardList)
+    global time_thread, forwardList
     # clean stale entries
     update_List = {}
     for key, value in forwardList.items():
-        print ("entry: ", key, "value: ", value)
+        #print ("entry: ", key, "value: ", value)
         if (value[1] > currnt_time_in_sec()):
             update_List[key] = value
     forwardList = update_List
-    # timer thread for timeout
-    if (not exit):
+    # update timer thread for timeout
+    if (threading.main_thread().is_alive()):
+        # if main fucntion still alive
         time_thread = threading.Timer(2.0, timeout)
         time_thread.start()
         #print ("start new thread: ", threading.current_thread())
