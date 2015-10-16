@@ -11,6 +11,11 @@ from switchyard.lib.address import *
 from switchyard.lib.packet import *
 from switchyard.lib.common import *
 import threading
+import time
+
+forwardList = {}
+time_thread = threading.Timer(None, None)
+exit = False
 
 def switchy_main(net):
     my_interfaces = net.interfaces() 
@@ -31,7 +36,8 @@ def switchy_main(net):
 
     #print ("mymacs: ", mymacs)
     # TODO: construct a dict with <ethaddr : port> pair
-    forwardList = dict([(intf.ethaddr.toStr(), [intf.name, "time"]) for intf in my_interfaces])
+    global forwardList, time_thread, exit
+    forwardList = dict([(intf.ethaddr.toStr(), [intf.name, currnt_time_in_sec()+30]) for intf in my_interfaces])
     #print ("forwardList", forwardList)
     
     # call timeout functiion
@@ -43,8 +49,6 @@ def switchy_main(net):
             # packet -> packet receive
             dev,packet = net.recv_packet()
         except NoPackets:
-            forwardList = dict()
-            #mymacs = []
             continue
         except Shutdown:
             return
@@ -55,8 +59,10 @@ def switchy_main(net):
         srcAddr = packet[0].src.toStr()
         if srcAddr not in forwardList:
             #print ("src addr. not in forward table, add", srcAddr , "to table")
-            forwardList[srcAddr] = [dev, "time"]
+            print ("curren Time: ", currnt_time_in_sec())
+            forwardList[srcAddr] = [dev, currnt_time_in_sec()+30]
             # update mymacs list
+            print ("updated list: ", forwardList)
             #mymacs.append(srcAddr)
         #print ("src: ", packet[0].src)
         #print ("dst: ", packet[0].dst)
@@ -75,10 +81,30 @@ def switchy_main(net):
                 if dev != intf.name:
                     log_debug ("Flooding packet {} to {}".format(packet, intf.name))
                     net.send_packet(intf.name, packet)
+    # exit = True
     net.shutdown()
 
 
 def timeout():
-    t = threading.Timer(2.0, timeout).start()
-    print ("timeout: ", switchy_main.forwardList)
+    global time_thread, forwardList, exit
+    print (forwardList)
+    # clean stale entries
+    update_List = {}
+    for key, value in forwardList.items():
+        print ("entry: ", key, "value: ", value)
+        if (value[1] > currnt_time_in_sec()):
+            update_List[key] = value
+    forwardList = update_List
+    # timer thread for timeout
+    if (not exit):
+        time_thread = threading.Timer(2.0, timeout)
+        time_thread.start()
+        #print ("start new thread: ", threading.current_thread())
+    else: 
+        #print ("cancel current thread: ", threading.current_thread())
+        time_thread.cancel()
+    #print ("timeout: ", forwardList)
 
+def currnt_time_in_sec():
+    current_milli_time = lambda: int(round(time.time() * 1000))
+    return int(current_milli_time()/1000)
