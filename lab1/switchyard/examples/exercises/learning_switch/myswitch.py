@@ -23,7 +23,7 @@ def switchy_main(net):
     forwardList = dict([(intf.ethaddr.toStr(), [intf.name, currnt_time_in_sec()+30]) for intf in my_interfaces]) 
     # call timeout functiion
     timeout()
-    print ("main thread: ", threading.get_ident())
+    #print ("main thread: ", threading.get_ident())
     while True:
         try:
             # dev -> device name
@@ -36,12 +36,12 @@ def switchy_main(net):
 
         log_debug ("In {} received packet {} on {}".format(net.name, packet, dev))
         # TODO: if the source MAC addr. not seen before, add it to the forward table.
-        print ("main thread: ", threading.get_ident())
+        #print ("main thread: ", threading.get_ident())
         srcAddr = packet[0].src.toStr()
         if srcAddr not in forwardList:
             forwardList[srcAddr] = [dev, currnt_time_in_sec()+30]
         if packet[0].dst.toStr() in forwardList:
-            print ("packet with dst: ", packet[0].dst, " recognized by forwrad table")
+            #print ("packet with dst: ", packet[0].dst, " recognized by forwrad table")
             # packet[0] - header for the packet
             # other data in the header: dst, src, ethertype
             log_debug ("Packet intended for me")
@@ -77,6 +77,7 @@ def timeout():
         time_thread.cancel()
     #print ("timeout: ", forwardList)
 
+# code soure for get current time, please refer to README.md
 def currnt_time_in_sec():
-    current_milli_time = lambda: int(round(time.time() * 1000))
-    return int(current_milli_time()/1000)
+    current_time = lambda: int(round(time.time() * 1000))
+    return int(current_time()/1000)
