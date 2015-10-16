@@ -14,8 +14,6 @@
 ~~4. implemented code for `time_out` function~~  
 ~~5. to fix the issue of `time_out` function thread keep running, after return from main function.~~  
 
-
-
 ## Encountered Issues: 
 
 ### `.srpy` test file issue:
@@ -50,6 +48,12 @@ then run:
 
 now everthing should work.
 
+### How to stop new thread when main function return.
+
+**Solution:**
+
+simply use the python buildin function to detect if thread for main function still alive:
+`threading.main_thread().is_alive()` will do the job.
 
 ### how to stop new thread when main function return. 
 
@@ -67,7 +71,6 @@ simply use the python buildin function to detect if thread for main function sti
 [time_out_thread_ref](http://stackoverflow.com/questions/11083349/python-threading-timer-stays-alive-after-calling-cancel-method)
 
 [get_current_time code](http://stackoverflow.com/questions/5998245/get-current-time-in-milliseconds-in-python)
-
 
 [Set up VirtualEnv](http://docs.python-guide.org/en/latest/dev/virtualenvs/)
 
