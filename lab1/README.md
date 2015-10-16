@@ -3,17 +3,27 @@
 ### CS640 2015 Fall
 ### Team: [Yunhe Liu](https://github.com/yunheL), [Xuyi Ruan](https://github.com/ruanxuyi)
 
+### [Lab1 Link: ] (http://pages.cs.wisc.edu/~sskausik08/640-assignments/)
+
 
 ## TODO: 
+<<<<<<< HEAD
 ~~1. forward packet to know port mapped from the source address.~~
 ~~2. implement code for learning new incoming packet - add (source address, port) to the forward table~~
 3. code up various test scripts for the smart switch.
 ~~4. implemented code for `time_out` function~~
 ~~5. to fix the issue of `time_out` function thread keep running, after return from main function.~~
+=======
+~~1. forward packet to know port mapped from the source address.~~  
+~~2. implement code for learning new incoming packet - add (source address, port) to the forward table~~  
+3. code up various test scripts for the smart switch.  
+~~4. implemented code for `time_out` function~~  
+5. to fix the issue of `time_out` function thread keep running, after return from main function.  
+>>>>>>> 49ed52aea8618009b86ba690a9521c60918c1d27
 
 
 
-## Counter Issues: 
+## Encountered Issues: 
 
 ### `.srpy` test file issue:
 
