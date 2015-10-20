@@ -52,13 +52,13 @@ def switch_tests():
     s.expect(PacketInputEvent("eth1", reqpkt, display=Ethernet), "An Ethernet frame from 00:00:00:00:00:cc with a broadcast destination address should arrive on eth1")
     s.expect(PacketOutputEvent("eth0", reqpkt, "eth2", reqpkt, display=Ethernet), "The Ethernet frame with a broadcast destination address should be forward out ports eth0 and eth2")
 
-    # timeout for 10 sec
-    s.expect(PacketInputTimeoutEvent(15.0), "Time out for 10 seconds")
+    # timeout for 15 sec
+    s.expect(PacketInputTimeoutEvent(15.0), "Time out for 15 seconds")
     
     # test case 4: a frame from C to A (learned, but forget)
     testpkt = mk_pkt("00:00:00:00:00:cc", "00:00:00:00:00:aa", "10.0.0.3", "10.0.0.1")
     s.expect(PacketInputEvent("eth1", testpkt, display=Ethernet), "An Ethernet frame from 00:00:00:00:00:dd should arrive on eth2")
-    s.expect(PacketOutputEvent("eth0", testpkt, "eth2", testpkt, display=Ethernet), "The Ethernet frame for 00:00:00:00:00:aa should be flouded on eth0")
+    s.expect(PacketOutputEvent("eth0", testpkt, "eth2", testpkt, display=Ethernet), "The Ethernet frame for 00:00:00:00:00:aa should be flouded on eth0 and eth1")
 
     # test case 5: a frame from A to C (learned)
     testpkt = mk_pkt("00:00:00:00:00:aa", "00:00:00:00:00:cc", "10.0.0.1", "10.0.0.3")
