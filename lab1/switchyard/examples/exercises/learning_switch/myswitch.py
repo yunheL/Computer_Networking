@@ -39,6 +39,9 @@ def switchy_main(net):
         if srcAddr not in forwardList:
             forwardList[srcAddr] = [dev, currnt_time_in_sec()+30]
         if packet[0].dst.toStr() in forwardList:
+            time = forwardList[srcAddr][1]
+            if not forwardList[srcAddr][0] == dev:
+                forwardList[srcAddr] = [dev, time]
             # packet[0] - header for the packet
             # other data in the header: dst, src, ethertype
             log_debug ("Packet intended for me")
