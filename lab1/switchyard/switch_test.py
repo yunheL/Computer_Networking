@@ -33,11 +33,24 @@ def switch_tests():
     s.add_interface('eth2', '10:00:00:00:00:03')
 
 
+    # test case 0: a frame from A to interface's MAC - should drop packet
+    # all ports except ingress
+    testpkt = mk_pkt("00:00:00:00:00:aa", "10:00:00:00:00:01", "10.0.0.1", "10.0.0.12")
+    s.expect(PacketInputEvent("eth0", testpkt, display=Ethernet), "An Ethernet frame fomr 00:00:00:00:00:aa to 10:00:00:00:00:01 should arrive on eth0")
+ 
+    
+
     # test case 1: a frame from A to D (f_table not learned dest addr yet)
     # all ports except ingress
     testpkt = mk_pkt("00:00:00:00:00:aa", "00:00:00:00:00:dd", "10.0.0.1", "10.0.0.4")
     s.expect(PacketInputEvent("eth0", testpkt, display=Ethernet), "An Ethernet frame fomr 00:00:00:00:00:aa to 00:00:00:00:00:dd should arrive on eth0")
     s.expect(PacketOutputEvent("eth1", testpkt, "eth2", testpkt, display=Ethernet), "The Ethernet frame for 00:00:00:00:00:dd should be flouded out eth1 and eth2")
+
+    # test case 1.1: a frame from A to D, A change interface number.
+    testpkt = mk_pkt("00:00:00:00:00:aa", "00:00:00:00:00:dd", "10.0.0.1", "10.0.0.4")
+    s.expect(PacketInputEvent("eth1", testpkt, display=Ethernet), "An Ethernet frame fomr 00:00:00:00:00:aa to 00:00:00:00:00:dd should arrive on eth1")
+    s.expect(PacketOutputEvent("eth0", testpkt, "eth2", testpkt, display=Ethernet), "The Ethernet frame for 00:00:00:00:00:dd should be flouded out eth0 and eth2")
+ 
     
     # timeout for 20 sec
     s.expect(PacketInputTimeoutEvent(20.0), "Time out for 20 seconds")
@@ -45,7 +58,7 @@ def switch_tests():
     # test case 2: a frame from D to A (learned)
     testpkt = mk_pkt("00:00:00:00:00:dd", "00:00:00:00:00:aa", "10.0.0.4", "10.0.0.1")
     s.expect(PacketInputEvent("eth2", testpkt, display=Ethernet), "An Ethernet frame from 00:00:00:00:00:dd should arrive on eth2")
-    s.expect(PacketOutputEvent("eth0", testpkt, display=Ethernet), "The Ethernet frame for 00:00:00:00:00:aa should be flouded on eth0")
+    s.expect(PacketOutputEvent("eth1", testpkt, display=Ethernet), "The Ethernet frame for 00:00:00:00:00:aa should be flouded on eth1")
 
     # test case 3: a frame from C to boardcast
     reqpkt = mk_pkt("00:00:00:00:00:cc", "ff:ff:ff:ff:ff:ff", "10.0.0.3", "255.255.255.255")

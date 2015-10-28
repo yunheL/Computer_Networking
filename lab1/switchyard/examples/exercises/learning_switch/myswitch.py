@@ -33,12 +33,21 @@ def switchy_main(net):
         except Shutdown:
             return
 
+        # drop packet if dst addr is indentical to the interface MAC
+        dropPacket = False
+        for intf in my_interfaces:
+            if packet[0].dst.toStr() == intf.ethaddr.toStr():
+                dropPacket = True
+        if dropPacket:
+            print ("Packet to interface MAC dropped.")
+            continue
         log_debug ("In {} received packet {} on {}".format(net.name, packet, dev))
         # TODO: if the source MAC addr. not seen before, add it to the forward table.
         srcAddr = packet[0].src.toStr()
         if srcAddr not in forwardList:
             forwardList[srcAddr] = [dev, currnt_time_in_sec()+30]
         if packet[0].dst.toStr() in forwardList:
+            # update dev(interface) if device moved.
             time = forwardList[srcAddr][1]
             if not forwardList[srcAddr][0] == dev:
                 forwardList[srcAddr] = [dev, time]
