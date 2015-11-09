@@ -15,6 +15,11 @@ class Router(object):
     def __init__(self, net):
         self.net = net
         # other initialization stuff here
+        my_interfaces = net.interfaces()
+        self.forward_table = dict([(str(intf.ipaddr), intf.ethaddr.toStr()) for intf in my_interfaces])
+        print (my_interfaces)
+        print (exit())
+
 
 
     def router_main(self):    
@@ -40,12 +45,10 @@ class Router(object):
                 log_debug("not arp, dropped")
                 continue
             dst_ip_addr = str(arp.targetprotoaddr)
-            my_interfaces = self.net.interfaces()
-            forward_table = dict([(str(intf.ipaddr), intf.ethaddr.toStr()) for intf in my_interfaces])
 
-            if dst_ip_addr in forward_table:
+            if dst_ip_addr in self.forward_table:
                 # response with ARP response
-                targethwaddr = forward_table[dst_ip_addr]
+                targethwaddr = self.forward_table[dst_ip_addr]
                 # send ARP response pkt
                 reply_pkt = create_ip_arp_reply(targethwaddr, arp.senderhwaddr, arp.targetprotoaddr, arp.senderprotoaddr)
                 self.net.send_packet(dev, reply_pkt)
