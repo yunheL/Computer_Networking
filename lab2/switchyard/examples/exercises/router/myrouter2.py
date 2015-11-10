@@ -7,9 +7,11 @@ Basic IPv4 router (static routing) in Python.
 import sys
 import os
 import time
+import ipaddress
 from switchyard.lib.packet import *
 from switchyard.lib.address import *
 from switchyard.lib.common import *
+
 
 class Router(object):
     def __init__(self, net):
@@ -17,11 +19,13 @@ class Router(object):
         self.interface_ip = [str(intf.ipaddr) for intf in net.interfaces()]
         # other initialization stuff here
         #print (int(IPv4Address('192.168.1.0')))
-        #print (exit())
         
         #print ("interface_ip", self.interface_ip)
         # import forward_table from interfaces
-        self.forward_table = [ [(int(intf.ipaddr) & int(intf.netmask)), str(intf.netmask), str(intf.ipaddr), intf.name] for intf in net.interfaces()]
+        
+        # ip = ipaddress.ip_address(3221225986) returns 192.0.2.2
+
+        self.forward_table = [[str(ipaddress.ip_address(int(intf.ipaddr) & int(intf.netmask))), str(intf.netmask), str(intf.ipaddr), intf.name] for intf in net.interfaces()]
 
         # import foward_table from files. 
         for intf in open('forwarding_table.txt').read().split('\n'):
@@ -30,6 +34,7 @@ class Router(object):
             self.forward_table.append(new_entry)
         #print (self.forward_table)
         #print (exit())
+        print ("self.forward_table: ", self.forward_table)
 
     def router_main(self):    
         '''

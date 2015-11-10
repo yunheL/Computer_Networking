@@ -19,15 +19,23 @@ what do we do if the ip addr not in list of interface?
 
 ## TODO (part 2):
 
-1. import forward table from interface and files. 
-2. forward match packet to dest.
+~~1. import forward table from interface and files. ~~
+~~2. forward match packet to dest.~~
+
+3. You should just ignore these non-IPv4 and non-ARP packets (and your router should not crash when it receives them!)
+4. decrement TTL.
+5. construct Ethernet header with `dst_mac` (from ARP inquery)
+6. move the ARP response from `myrouter1.py`
+7. construct ARP query, if pkt receive type == ARP, 1) complete ethernet header 2) foward packet 3) added entry to the ARP table <ip, ethnet_addr> (local)
+8. send ARP once every second util recive OR excess max 5
 
 
 ## Questions: 
 1. the idea of next hop VS interfaces
 2. ip addr for interface = next hop addr?
 3. the interface address = destination address -> packet to router itself? what is router have many addresses? 
-4. how to do bitwise and and return a subnet address for interfaces? 
+~~4. how to do bitwise and and return a subnet address for interfaces?~~
+- by using `ipaddress.ip_address(int)`
 5. why `network prefix` not match with `next hoop addr` ?
 
 ```
