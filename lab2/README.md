@@ -24,9 +24,8 @@ what do we do if the ip addr not in list of interface?
 
 3. You should just ignore these non-IPv4 and non-ARP packets (and your router should not crash when it receives them!)
 ~~4. decrement TTL.~~  
-5. construct Ethernet header with `dst_mac` (from ARP inquery)
-6. move the ARP response from `myrouter1.py`
-7. construct ARP query, if pkt receive type == ARP, 1) complete ethernet header 2) foward packet 3) added entry to the ARP table <ip, ethnet_addr> (local)
+~~5. construct Ethernet header with `dst_mac` (from ARP inquery) ~~
+7. handle received ARP query, if pkt receive type == ARP, 1) complete ethernet header 2) foward packet 3) added entry to the ARP table <ip, ethnet_addr> (local)
 8. send ARP once every second util recive OR excess max 5
 
 
