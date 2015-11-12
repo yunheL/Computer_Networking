@@ -19,11 +19,11 @@ what do we do if the ip addr not in list of interface?
 
 ## TODO (part 2):
 
-~~1. import forward table from interface and files. ~~
-~~2. forward match packet to dest.~~
+~~1. import forward table from interface and files. ~~  
+~~2. forward match packet to dest.~~  
 
 3. You should just ignore these non-IPv4 and non-ARP packets (and your router should not crash when it receives them!)
-4. decrement TTL.
+~~4. decrement TTL.~~  
 5. construct Ethernet header with `dst_mac` (from ARP inquery)
 6. move the ARP response from `myrouter1.py`
 7. construct ARP query, if pkt receive type == ARP, 1) complete ethernet header 2) foward packet 3) added entry to the ARP table <ip, ethnet_addr> (local)
@@ -45,8 +45,19 @@ what do we do if the ip addr not in list of interface?
 	10.100.0.0 255.255.0.0 172.16.42.2 router-eth2
 
 ```
+6. when a packet receive, do we need to deterine if it is IP pkts beofore we send ARP requests?
+7. how to find router IP? 
+	IP address on a router through which the destination is reachable.
+
+
+	
 
 ## Boundry conditions: 
 1. router receive the ip address of router itself.
 2. what do we do if the ip addr not in list of interface?:
 
+## Important point: 
+ for the arp_request.
+`next_hop ip` - is the `sender ip`for next hop
+'subnet_etherAddr' - is the sender ether_addr for next hop
+next_hop help us to send the arp to the dest_host.

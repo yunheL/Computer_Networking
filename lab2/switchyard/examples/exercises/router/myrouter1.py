@@ -17,8 +17,6 @@ class Router(object):
         # other initialization stuff here
         my_interfaces = net.interfaces()
         self.forward_table = dict([(str(intf.ipaddr), intf.ethaddr.toStr()) for intf in my_interfaces])
-        print (my_interfaces)
-        print (exit())
 
 
 
@@ -39,7 +37,9 @@ class Router(object):
                 break
             if gotpkt:
                 log_debug("Got a packet: {}".format(str(pkt)))
-            
+           
+            print (pkt[0].ttl)
+            print (exit()) 
             arp = pkt.get_header(Arp)
             if arp is None:
                 log_debug("not arp, dropped")

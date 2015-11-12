@@ -16,7 +16,8 @@ from switchyard.lib.common import *
 class Router(object):
     def __init__(self, net):
         self.net = net
-        self.interface_ip = [str(intf.ipaddr) for intf in net.interfaces()]
+        self.interface_ip_mac = dict((str(intf.ipaddr), str(intf.ethaddr)) for intf in net.interfaces())
+        self.ip_queue = {}
         # other initialization stuff here
         #print (int(IPv4Address('192.168.1.0')))
         
@@ -55,20 +56,51 @@ class Router(object):
             if gotpkt:
                 log_debug("Got a packet: {}".format(str(pkt)))
             
-            dst_addr = pkt[1].dst
-            if str(dst_addr) in self.interface_ip:
-                # drop packet
-                # dst of packet (pkt[1].dst) same as router interface addr.
-                #TODO: 
-                continue
+                     
+            ip_pkt = pkt.get_header(IPv4)
+            arp = pkt.get_header(Arp)
+            
+            # remove pkt from queue
+            if arp is not None: 
+                # arp received
+                print ("arp received")
 
+            # push pkt into queue if is IPv4 packet
+            if ip_pkt is not None:
+                # IPv4 pkt received
+                print ("IPv4 received")
+                # decrement TTL
+                pkt[1].ttl = pkt[1].ttl-1
+                
+                 # drop packet if dst same as interface addr.
+                dst_addr = pkt[1].dst
+                if str(dst_addr) in self.interface_ip_mac:
+                    # drop packet
+                    #TODO:
+                    continue
+                # push ip pkt into queue
+                self.ip_queue[str(dst_addr)] = [pkt, 0, time.time()]
+
+                # send first Arp request:
+            
+            # TODO: handle ARP receive
+            # 1. add to ARP table (cache)
+            # 2. delete from queue
+            
+            # TODO: Constantly check packets inside queue.
+
+
+
+            # TODO: put match code ONLY when IP=pkt receive                 
+            # check if has match in forward table.
             match_list = []
             for entry in self.forward_table:
                 subnet_num = IPv4Address(entry[0])
                 mask = IPv4Address(entry[1])
+                dst_addr = pkt[1].dst
                 match = (int(dst_addr) & int(mask)) == int(subnet_num)
                 if match:
-                    match_list.append([int(subnet_num), entry[3]])
+                    match_list.append([int(subnet_num), entry])
             
             longest_match = 0
             longest_index = 0
@@ -77,20 +109,39 @@ class Router(object):
                 if len(match_list) == 1:
                     # only one match
                     # TODO: 
-                    continue
-                for index, entry in enumerate(match_list):
-                    if entry[0] > longest_match:
-                        longest_index = index
-                        longest_match = entry[0]
-                # TODO: current reutrn interface
-                match_list[longest_index][1]
-
+                    forward_entry = match_list[0][1]
+                    dst_addr = pkt[1].dst
+                    print ("from only 1") 
+                    Router.arp_request(self, str(dst_addr), forward_entry)
+                else:
+                    for index, entry in enumerate(match_list):
+                        if entry[0] > longest_match:
+                            longest_index = index
+                            longest_match = entry[0]
+                    # TODO: current reutrn interface
+                    forward_entry = match_list[longest_index][1]
+                    dst_addr = pkt[1].dst
+                    print ("From more than 1")
+                    Router.arp_request(self, str(dst_addr), forward_entry)
+                    
             else: 
                 # no match with forward table
                 # TODO: 
                 continue
 
-            
+    def arp_request(self, targetip, forward_entry):
+        ether = Ethernet()
+        ether.src = self.interface_ip_mac[forward_entry[2]]
+        ether.dst = 'ff:ff:ff:ff:ff:ff'
+        ether.ethertype = EtherType.ARP
+        arp = Arp()
+        arp.operation = ArpOperation.Request
+        arp.senderhwaddr = self.interface_ip_mac[forward_entry[2]]
+        arp.senderprotoaddr = forward_entry[2]
+        arp.targethwaddr = 'ff:ff:ff:ff:ff:ff'
+        arp.targetprotoaddr = targetip
+        arppacket = ether + arp
+        self.net.send_packet(forward_entry[3], arppacket)
 
 def switchy_main(net):
     '''
