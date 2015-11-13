@@ -12,17 +12,15 @@
 
 This project designed to understand the basic packet forwaring technique to reqpresent how a router work. The current version of the router only manage packet type for ARP and IPv4.
 
-
 ## TODO (part 1):
 Response to ARP requests
 ~~1. determine the packet type (ARP)~~
 ~~2. drop packets that are not ARP for part1 of the project.~~
 
 ## Questions:
-what do we do if the ip addr not in list of interface?
+???what do we do if the ip addr not in list of interface?
 
 ## TODO (part 2):
-
 ~~1. import forward table from interface and files. ~~  
 ~~2. forward match packet to dest.~~  
 
