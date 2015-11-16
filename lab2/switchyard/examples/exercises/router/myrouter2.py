@@ -91,31 +91,26 @@ class Router(object):
                     pkt[0].src = self.interface_ip_mac[forward_entry[2]]
                     pkt[0].dst = self.arp_table[str(dst_addr)] 
                     self.net.send_packet(forward_entry[3], pkt)
-                    continue
-
-               
-                # find match entry from forward_table
-                
-                forward_entry = Router.forward_match(self, pkt)
-                if forward_entry is None:
-                    # no match with forward table
-                    continue
-                # push ip pkt into queue
-                self.ip_queue[str(dst_addr)] = [pkt, forward_entry, 1, time.time()]
-
-
-                # send ARP request
-                Router.arp_request(self, str(dst_addr), forward_entry)
-
-                                 
-
-            
+                else:  
+                    # find match entry from forward_table 
+                    forward_entry = Router.forward_match(self, pkt)
+                    if forward_entry is None:
+                        # no match with forward table
+                        continue
+                    # push ip pkt into queue
+                    if str(dst_addr) not in self.ip_queue:
+                        self.ip_queue[str(dst_addr)] = [pkt, forward_entry, 1, time.time()]
+                        # send ARP request
+                        Router.arp_request(self, str(dst_addr), forward_entry)
+                    else:
+                        # when receive packet with the same dst_ip:
+                        print ("mutliple IP packet with same dst_ip receive inside ip_queue")  
             # handle ARP receive
             # 1. add to ARP table (cache)
             # 2. delete from queue
             if arp is not None: 
                 # arp received
-                print ("arp received")
+                #print ("arp received")
                 #print ("ip_queue: ", self.ip_queue)
                 
                 # cache into the ARP table
@@ -163,18 +158,18 @@ class Router(object):
                     count = info[2]
                     times = info[3]
                     curr_time = time.time()
-                    print ("ip_queue_before: ", tmp_queue)
+                    #print ("ip_queue_before: ", tmp_queue)
                     if count < 5:
                         tmp_queue[dst_addr] = info
-                    print ("current_time: ", curr_time, "time: ", times)
+                    #print ("current_time: ", curr_time, "time: ", times)
                     if curr_time - times > 1.0:
-                        print ("enter here")
+                        #print ("enter here")
                         Router.arp_request(self, dst_addr, forward_entry)
                         tmp_queue[dst_addr][2]+=1
                         tmp_queue[dst_addr][3] = curr_time
-                    print ("tmp_queue_after: ", tmp_queue)
+                    #print ("tmp_queue_after: ", tmp_queue)
                 self.ip_queue = tmp_queue
-                print (self.ip_queue)
+                #print (self.ip_queue)
 
 
 
@@ -190,9 +185,9 @@ class Router(object):
         arp.senderprotoaddr = forward_entry[2]
         arp.targethwaddr = 'ff:ff:ff:ff:ff:ff'
         arp.targetprotoaddr = targetip
-        print ("senderHW", arp.senderhwaddr, "senderIP", arp.senderprotoaddr, "targetHW", arp.targethwaddr, "targetIP", arp.targetprotoaddr)
+        #print ("senderHW", arp.senderhwaddr, "senderIP", arp.senderprotoaddr, "targetHW", arp.targethwaddr, "targetIP", arp.targetprotoaddr)
         arppacket = ether + arp
-        print ("interface: ", forward_entry[3])
+        #print ("interface: ", forward_entry[3])
         self.net.send_packet(forward_entry[3], arppacket)
 
     def forward_match(self, packet):
