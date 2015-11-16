@@ -34,8 +34,6 @@ class Router(object):
             new_entry = [sub_entry for sub_entry in intf.split(' ')]
             #print ("new_entry: ", new_entry)
             self.forward_table.append(new_entry)
-        print (self.forward_table)
-        print (exit())
 
     def router_main(self):    
         '''
@@ -49,6 +47,7 @@ class Router(object):
             except NoPackets:
                 log_debug("No packets available in recv_packet")
                 gotpkt = False
+                continue
             except Shutdown:
                 log_debug("Got shutdown signal")
                 break
@@ -59,8 +58,10 @@ class Router(object):
                      
             ip_pkt = pkt.get_header(IPv4)
             arp = pkt.get_header(Arp)
-
+            
             if ip_pkt is None and arp is None:
+                print ("filtered pkt")
+                print (pkt)
                 # only handle IPv4 and ARP packets now
                 continue
             
@@ -86,7 +87,7 @@ class Router(object):
                 if str(dst_addr) in self.arp_table:
                     # find match in forward_table
                     # to get src_mac and interface.
-                    forward_entry = forward_match(self, pkt)
+                    forward_entry = Router.forward_match(self, pkt)
                     pkt[0].src = self.interface_ip_mac[forward_entry[2]]
                     pkt[0].dst = self.arp_table[str(dst_addr)] 
                     self.net.send_packet(forward_entry[3], pkt)
@@ -114,24 +115,39 @@ class Router(object):
             # 2. delete from queue
             if arp is not None: 
                 # arp received
-                #print ("arp received")
+                print ("arp received")
                 #print ("ip_queue: ", self.ip_queue)
-                send_ip = pkt[1].senderprotoaddr
-                send_mac = pkt[1].senderhwaddr
-                recv_mac = pkt[1].targethwaddr
+                if arp.operation is ArpOperation.Request:
+                    print ("arp request")
+                    dst_ip = str(arp.targetprotoaddr)
+                    print (dst_ip)
+                    if dst_ip in self.interface_ip_mac:
+                        # send mac addr back
+                        dst_mac = self.interface_ip_mac[dst_ip]
+                        reply_pkt = create_ip_arp_reply(dst_mac, arp.senderhwaddr, arp.targetprotoaddr, arp.senderprotoaddr)
+                        self.net.send_packet(dev, reply_pkt)
+                    else:
+                        # drop the packet
+                        continue
+
                 
-                # cache entry to ARP table
-                self.arp_table[str(send_ip)] = str(send_mac)
-                #print (self.arp_table)
                 
-                # update Ethernet header
-                packet = self.ip_queue[str(send_ip)][0]
-                packet[0].src = recv_mac
-                packet[0].dst = send_mac
-                # delete IP_pkt from queue
-                del self.ip_queue[str(send_ip)]
-                # send IP_pkt to dest host in layer2
-                self.net.send_packet(dev, packet)
+                if arp.operation is ArpOperation.Reply: 
+                    send_ip = arp.senderprotoaddr
+                    send_mac = arp.senderhwaddr
+                    recv_mac = arp.targethwaddr
+                    # cache entry to ARP table
+                    self.arp_table[str(send_ip)] = str(send_mac)
+                    #print (self.arp_table)
+                
+                    # update Ethernet header
+                    packet = self.ip_queue[str(send_ip)][0]
+                    packet[0].src = recv_mac
+                    packet[0].dst = send_mac
+                    # delete IP_pkt from queue
+                    del self.ip_queue[str(send_ip)]
+                    # send IP_pkt to dest host in layer2
+                    self.net.send_packet(dev, packet)
             
             # check ip_queue: 
             if bool(self.ip_queue):
@@ -144,7 +160,7 @@ class Router(object):
                         del self.ip_queue[dst_addr]
                         continue
                     if curr_time - times > 1.0:
-                        arp_request(self, dst_addr, forward_entry)
+                        Router.arp_request(self, dst_addr, forward_entry)
                         info[2]+=1
                         info[3] = curr_time
 

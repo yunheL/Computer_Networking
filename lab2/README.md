@@ -19,7 +19,8 @@ Response to ARP requests
 
 ## Questions:
 ???what do we do if the ip addr not in list of interface?
-
+?? TTL count to zero, ICMP?
+?? will all the info in forward_table.txt file organized??
 ## TODO (part 2):
 ~~1. import forward table from interface and files. ~~  
 ~~2. forward match packet to dest.~~  
