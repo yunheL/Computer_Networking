@@ -60,8 +60,8 @@ class Router(object):
             arp = pkt.get_header(Arp)
             
             if ip_pkt is None and arp is None:
-                print ("filtered pkt")
-                print (pkt)
+                #print ("filtered pkt")
+                #print (pkt)
                 # only handle IPv4 and ARP packets now
                 continue
             
@@ -117,10 +117,20 @@ class Router(object):
                 # arp received
                 print ("arp received")
                 #print ("ip_queue: ", self.ip_queue)
+                
+                # cache into the ARP table
+                send_ip = arp.senderprotoaddr
+                send_mac = arp.senderhwaddr
+                recv_mac = arp.targethwaddr
+                # cache entry to ARP table
+                self.arp_table[str(send_ip)] = str(send_mac)
+
+                #print ("arp_table: ", self.arp_table) 
                 if arp.operation is ArpOperation.Request:
-                    print ("arp request")
+ 
+                    #print ("arp request")
                     dst_ip = str(arp.targetprotoaddr)
-                    print (dst_ip)
+                    #print (dst_ip)
                     if dst_ip in self.interface_ip_mac:
                         # send mac addr back
                         dst_mac = self.interface_ip_mac[dst_ip]
@@ -132,37 +142,40 @@ class Router(object):
 
                 
                 
-                if arp.operation is ArpOperation.Reply: 
-                    send_ip = arp.senderprotoaddr
-                    send_mac = arp.senderhwaddr
-                    recv_mac = arp.targethwaddr
-                    # cache entry to ARP table
-                    self.arp_table[str(send_ip)] = str(send_mac)
+                if arp.operation is ArpOperation.Reply:
                     #print (self.arp_table)
-                
-                    # update Ethernet header
-                    packet = self.ip_queue[str(send_ip)][0]
-                    packet[0].src = recv_mac
-                    packet[0].dst = send_mac
-                    # delete IP_pkt from queue
-                    del self.ip_queue[str(send_ip)]
-                    # send IP_pkt to dest host in layer2
-                    self.net.send_packet(dev, packet)
+                    if str(send_ip) in self.ip_queue:
+                        # update Ethernet header
+                        packet = self.ip_queue[str(send_ip)][0]
+                        packet[0].src = recv_mac
+                        packet[0].dst = send_mac
+                        # delete IP_pkt from queue
+                        # TODO: handle if no entry in ip_queue, dont crach
+                        del self.ip_queue[str(send_ip)]
+                        # send IP_pkt to dest host in layer2
+                        self.net.send_packet(dev, packet)
             
             # check ip_queue: 
             if bool(self.ip_queue):
+                tmp_queue = {}
                 for dst_addr, info in self.ip_queue.items():
                     forward_entry = info[1]
                     count = info[2]
                     times = info[3]
                     curr_time = time.time()
-                    if count == 5:
-                        del self.ip_queue[dst_addr]
-                        continue
+                    print ("ip_queue_before: ", tmp_queue)
+                    if count < 5:
+                        tmp_queue[dst_addr] = info
+                    print ("current_time: ", curr_time, "time: ", times)
                     if curr_time - times > 1.0:
+                        print ("enter here")
                         Router.arp_request(self, dst_addr, forward_entry)
-                        info[2]+=1
-                        info[3] = curr_time
+                        tmp_queue[dst_addr][2]+=1
+                        tmp_queue[dst_addr][3] = curr_time
+                    print ("tmp_queue_after: ", tmp_queue)
+                self.ip_queue = tmp_queue
+                print (self.ip_queue)
+
 
 
     def arp_request(self, targetip, forward_entry):
@@ -177,7 +190,9 @@ class Router(object):
         arp.senderprotoaddr = forward_entry[2]
         arp.targethwaddr = 'ff:ff:ff:ff:ff:ff'
         arp.targetprotoaddr = targetip
+        print ("senderHW", arp.senderhwaddr, "senderIP", arp.senderprotoaddr, "targetHW", arp.targethwaddr, "targetIP", arp.targetprotoaddr)
         arppacket = ether + arp
+        print ("interface: ", forward_entry[3])
         self.net.send_packet(forward_entry[3], arppacket)
 
     def forward_match(self, packet):
@@ -197,7 +212,7 @@ class Router(object):
             if len(match_list) == 1:
                 # only one match
                 # TODO: 
-                print ("from only 1") 
+                #print ("from only 1") 
                 forward_entry = match_list[0][1]
                 return forward_entry
 
@@ -207,7 +222,7 @@ class Router(object):
                         longest_index = index
                         longest_match = entry[0]
                 # TODO: current reutrn interface
-                print ("From more than 1")
+                #print ("From more than 1")
 
                 forward_entry = match_list[longest_index][1]
                 return forward_entry
