@@ -4,12 +4,10 @@ Blaster: Send variable size UDP packets to a specified host
 Blastee: receive packets, log them and printing receip info
 
 Packet:
+
 8-bit packet type: D, E, C
-
 32-bit sequence
-
 32-bit length
-
 variable length payload
 
 Test:
