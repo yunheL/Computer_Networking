@@ -1,23 +1,26 @@
 ### Briefer description
 
-Blaster: Send variable size UDP packets to a specified host  
-Blastee: receive packets, log them and printing receip info
+*Blaster*: Send variable size UDP packets to a specified host  
+*Blastee*: receive packets, log them and printing receip info
 
-Packet:
+**Packet:**  
+8-bit packet type: D, E, C  
+32-bit sequence  
+32-bit length  
+variable length payload  
 
-8-bit packet type: D, E, C
-32-bit sequence
-32-bit length
-variable length payload
-
-Test:
+**Test:**  
 any number of DATA + 1 END
 
-Invoke Blaster:
+**Invoke Blaster:**  
+```
 blaster -s <hostname> -p <port> -r <rate> -n <num> -q <seq_no> -l <length> -c <echo>
+```
 
-Invoke Blastee:
+Invoke Blastee:  
+```
 blastee -p <port> -c <echo>
+```
 
 Blastee print:
 ```
@@ -29,15 +32,16 @@ else if(5 seconds time out)
 	treat as END LOST;
 	print summary info;
 ```
--> Excutable must be named "blaster" and "blastee"
--> Need to provide Makefile
 
-Advice:
--> Start Small
--> listening port test "netstat -u"
--> Man page: getopt(3), ip(7), udp(7), sendto(2), recvfrom(2), bind(2), and gethostbyname(3) (e.g., "$ man 7 ip".)
--> remember to check return value of each system call function
--> "echo" service is port 7
+-> Excutable must be named "blaster" and "blastee"  
+-> Need to provide Makefile  
+
+**Advice:**  
+-> Start Small  
+-> listening port test "netstat -u"  
+-> Man page: getopt(3), ip(7), udp(7), sendto(2), recvfrom(2), bind(2), and gethostbyname(3) (e.g., "$ man 7 ip".)  
+-> remember to check return value of each system call function  
+-> "echo" service is port 7  
 
 
 ###Question about assignment description
