@@ -1,4 +1,4 @@
-### Briefer description
+### Briefer description :smiley
 
 *Blaster*: Send variable size UDP packets to a specified host  
 *Blastee*: receive packets, log them and printing receip info
@@ -17,12 +17,12 @@ any number of DATA + 1 END
 blaster -s <hostname> -p <port> -r <rate> -n <num> -q <seq_no> -l <length> -c <echo>
 ```
 
-Invoke Blastee:  
+**Invoke Blastee:**  
 ```
 blastee -p <port> -c <echo>
 ```
 
-Blastee print:
+**Blastee print:**  
 ```
 if(received is DATA)
 	print packet info;
