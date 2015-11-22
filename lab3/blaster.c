@@ -28,17 +28,19 @@
 /*ip: Linux inplements the IPv4. An IP socket is created
  * by calling the socket functions as socket(AF_INET, socket_type, protocol)
  */
-struct sockaddr_in 
-{
-  sa_family_t    sin_family; /* address family: AF_INET */
-  in_port_t      sin_port;   /* port in network byte order */
-  struct in_addr sin_addr;   /* internet address */
-};
+
+//struct sockaddr_in 
+//{
+//  sa_family_t    sin_family; /* address family: AF_INET */
+//  in_port_t      sin_port;   /* port in network byte order */
+//  struct in_addr sin_addr;   /* internet address */
+//};
+
 
 /* Internet address. */
-struct in_addr {
-  uint32_t       s_addr;     /* address in network byte order */
-};
+//struct in_addr {
+//  uint32_t       s_addr;     /* address in network byte order */
+//};
 
 //function that generates error message
 void error(const char *msg)
@@ -54,10 +56,16 @@ int main(int argc, char *argv[])
   {
     error("Command line argument number error");
     exit(1);
-  }
+  }  
 
   //instantiate the udp socket
+  struct sockaddr_in udp_socket;
   udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
+
+  //get port number
+  bzero((char *) &serv_addr, sizeof(serv_addr));
+	  portno = atoi(argv[5]);
+
 
 /* when a UDP socket is created, its local and remote addresses are unspecified.
  * Datagrams can be sent immediately using sendto() or sendmsg() 
