@@ -34,17 +34,17 @@ else if(5 seconds time out)
 ```
 
 -> Excutable must be named "blaster" and "blastee"  
--> Need to provide Makefile  
+-> Need to provide Makefile:see_no_evil:  
 
 **Advice:**  
--> Start Small  
+-> Start Small:baby_chick:  
 -> listening port test "netstat -u"  
 -> Man page: getopt(3), ip(7), udp(7), sendto(2), recvfrom(2), bind(2), and gethostbyname(3) (e.g., "$ man 7 ip".)  
 -> remember to check return value of each system call function  
 -> "echo" service is port 7  
 
 
-###Question about assignment description
+###Question about assignment description:stuck_out_tongue_closed_eyes:
 1. So the size of <length> i.e. length of variable payload should stay the same for each test? (thus we can control the transmission rate by using the variable <rate> i.e number of packets per second)
 
 2. The print out for blaster:
