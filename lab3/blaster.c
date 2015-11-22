@@ -2,15 +2,28 @@
  * Data: November 22, 2015
  * Acknowledgement: Some code in this file are
  * referenced from Linux Programmer's Manual (the Man Page)
+ * and stackoverflow
  */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
+/* steps of using sockets:
+ * 1. Create the socket
+ * 2. Identify the socket (name it)
+ * 3. On the server, wait for a message
+ * 4. On the client, send a message
+ * 5. send a response back to the client (optional)
+ * 6. close the socket
+ */
+
 //getopt(): function parses the command-line arguments.
+
+//TODO: ask TA about code use from <http://www.linuxhowtos.org/data/6/server.c>
 
 /*ip: Linux inplements the IPv4. An IP socket is created
  * by calling the socket functions as socket(AF_INET, socket_type, protocol)
@@ -27,8 +40,22 @@ struct in_addr {
   uint32_t       s_addr;     /* address in network byte order */
 };
 
-int main()
+//function that generates error message
+void error(const char *msg)
 {
+  perror(msg);
+  exit(1);
+}
+
+int main(int argc, char *argv[])
+{
+  //valid input command
+  if (argc != 15)
+  {
+    error("Command line argument number error");
+    exit(1);
+  }
+
   //instantiate the udp socket
   udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
 
