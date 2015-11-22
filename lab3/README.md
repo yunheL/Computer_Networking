@@ -1,7 +1,7 @@
 ### Briefer description
 
-*Blaster: Send variable size UDP packets to a specified host
-*Blastee: receive packets, log them and printing receip info
+Blaster: Send variable size UDP packets to a specified host  
+Blastee: receive packets, log them and printing receip info
 
 Packet:
 
