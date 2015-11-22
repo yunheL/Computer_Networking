@@ -1,4 +1,4 @@
-### Briefer description :smiley
+### Briefer description :smiley:
 
 *Blaster*: Send variable size UDP packets to a specified host  
 *Blastee*: receive packets, log them and printing receip info
