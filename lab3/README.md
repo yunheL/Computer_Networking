@@ -49,8 +49,9 @@ Socket address is the combination of an IP address and a port number
 A socket is characterized by: 1. Local socket address (Local IP + Port#) 2. Protocol (e.g. UDP)  
 A socket is referred to by a unique integer value called a socket descriptor
 The netstate command line tool can be used to list all currently established sockets and related information  
-![Very good TCP Socket flow diagram](https://upload.wikimedia.org/wikipedia/commons/a/a1/InternetSocketBasicDiagram_zhtw.png)
-
+![Very good TCP Socket flow diagram from wikipedia](https://upload.wikimedia.org/wikipedia/commons/a/a1/InternetSocketBasicDiagram_zhtw.png)
+Please note that this picture is referenced from wikipedia page (Berkeley Socket)  
+[Wikipedia: Berkeley Socket](https://en.wikipedia.org/wiki/Berkeley_sockets)
 
 ###Question about assignment description:stuck_out_tongue_closed_eyes:
 1. So the size of <length> i.e. length of variable payload should stay the same for each test? (thus we can control the transmission rate by using the variable <rate> i.e number of packets per second)
