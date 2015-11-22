@@ -11,6 +11,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <sys/un.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 /* steps of using sockets:
  * 1. Create the socket

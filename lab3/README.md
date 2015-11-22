@@ -43,6 +43,14 @@ else if(5 seconds time out)
 -> remember to check return value of each system call function  
 -> "echo" service is port 7  
 
+**Helpful Knowledge on Socket:**  
+Endpoint of an inter-process communication  
+Socket address is the combination of an IP address and a port number  
+A socket is characterized by: 1. Local socket address (Local IP + Port#) 2. Protocol (e.g. UDP)  
+A socket is referred to by a unique integer value called a socket descriptor
+The netstate command line tool can be used to list all currently established sockets and related information  
+![Very good TCP Socket flow diagram](https://upload.wikimedia.org/wikipedia/commons/a/a1/InternetSocketBasicDiagram_zhtw.png)
+
 
 ###Question about assignment description:stuck_out_tongue_closed_eyes:
 1. So the size of <length> i.e. length of variable payload should stay the same for each test? (thus we can control the transmission rate by using the variable <rate> i.e number of packets per second)
@@ -53,3 +61,6 @@ echo seq# payload(4 byte) <- on the same line
 Is this correct? Is seq# and payload(4 bit) on the same line?
 
 3. The ehco is only one way ("blastee -> blaster") is that correct? So even if the blatee blast back packet with echo field has the value "1", the blaster will not resend the packet.
+
+###Questions during writing the program
+1. How we do the server hear from client first? i.e. How to we realize that blaster will hear from blastee first? Since blaster is not a "famous port", how does blastee knows where to send?
