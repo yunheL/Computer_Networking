@@ -65,3 +65,5 @@ Is this correct? Is seq# and payload(4 bit) on the same line?
 
 ###Questions during writing the program
 1. How we do the server hear from client first? i.e. How to we realize that blaster will hear from blastee first? Since blaster is not a "famous port", how does blastee knows where to send?
+
+2. How to construct and send packets?
