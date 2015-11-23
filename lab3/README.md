@@ -67,3 +67,10 @@ Is this correct? Is seq# and payload(4 bit) on the same line?
 1. How we do the server hear from client first? i.e. How to we realize that blaster will hear from blastee first? Since blaster is not a "famous port", how does blastee knows where to send?
 
 2. How to construct and send packets?
+
+### Progress log
+11/22 11:40pm
+put most background knowledge in this README and blaster comment area.
+Pushed blaster basic structure (constructed basic UDP server socket).
+Compiles but lakc of functionality.
+Need to figure out how to construct and transmit packet.
