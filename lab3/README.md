@@ -1,3 +1,9 @@
+###README index :thumbsup:
+1. Briefer description :blush:  
+2. Questions about assignment description :blush:  
+3. Questions during writing the program :stuck_out_tongue_closed_eyes:
+4. Progress Log :stuck_out_tongue_winking_eye:
+
 ### Briefer description :smiley:
 
 *Blaster*: Send variable size UDP packets to a specified host  
@@ -53,7 +59,7 @@ The netstate command line tool can be used to list all currently established soc
 Please note that this picture is referenced from wikipedia page (Berkeley Socket)  
 [Wikipedia: Berkeley Socket](https://en.wikipedia.org/wiki/Berkeley_sockets)
 
-###Question about assignment description:stuck_out_tongue_closed_eyes:
+###Questions about assignment description:stuck_out_tongue_closed_eyes:
 1. So the size of <length> i.e. length of variable payload should stay the same for each test? (thus we can control the transmission rate by using the variable <rate> i.e number of packets per second)
 
 2. The print out for blaster:
@@ -68,7 +74,7 @@ Is this correct? Is seq# and payload(4 bit) on the same line?
 
 2. How to construct and send packets?
 
-### Progress log
+### Progress Log
 11/22 11:40pm
 put most background knowledge in this README and blaster comment area.
 Pushed blaster basic structure (constructed basic UDP server socket).
