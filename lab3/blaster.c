@@ -17,6 +17,8 @@
 #include <errno.h>
 #include <sys/types.h>
 
+#define EVER ;;
+
 /* steps of using sockets:
  * 1. Create the socket
  * 2. Identify the socket (name it)
@@ -71,6 +73,12 @@ int main(int argc, char *argv[])
   struct sockaddr_in sa;
   //data byte count
   socklen_t fromlen;
+  ssize_t recvsize;
+  //TODO: How should I determine the size of the buffer
+  //potbug: How to determine the size of the buffer
+  int buf_size = 50*1024; //as length < 50KB
+  char buffer[buf_size];
+  int msg_size = atoi(argv[13]);
 
   //a.b when a is an object; a->b when a is a pointer to an object
   memset(&sa, 0, sizeof sa);
@@ -93,6 +101,29 @@ int main(int argc, char *argv[])
   if(-1 == bind(udp_socket, (struct sockaddr *) &sa, fromlen))
   {
      error("bind() failed\n"); 
+  }
+
+  for(EVER)
+  {
+    //recv(), recvfrom(), recvmsg() calls are used to receive messages from a socket.
+    //recvfrom() places the received message into the buffer buf. The caller must
+    //specify the size of the buffer in len. 
+    //ssize_t recvfrom(int sockfd, void *buf, size_t len, int flags, 
+    //struct sockaddr *src_addr, socklen_t *addrlen)
+    //TODO: Question: so the reason I don't need to use &buffer here is that buffer
+    //is an array and buffer will server as the base address?
+    recvsize = recvfrom(udp_socket, (void*)buffer, msg_size, 0,(struct sockaddr*) &sa, &fromlen);
+    if(recvsize < 0)
+    {
+      error("recvfrom failure");
+    }
+
+    //TODO: re-do print section
+    printf("recvsize: %d\n ", recvsize);
+
+    //TODO: Why sleep?
+    sleep(1);
+    printf("datagram: %.*s\n", (int) recvsize, buffer);
   }
 
 /*debug code
