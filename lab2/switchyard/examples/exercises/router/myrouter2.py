@@ -92,7 +92,8 @@ class Router(object):
                     pkt[0].dst = self.arp_table[str(dst_addr)] 
                     self.net.send_packet(forward_entry[3], pkt)
                 else:  
-                    # find match entry from forward_table 
+                    # find match entry from forward_table
+                    print ("here!!") 
                     forward_entry = Router.forward_match(self, pkt)
                     if forward_entry is None:
                         # no match with forward table
@@ -104,6 +105,13 @@ class Router(object):
                         Router.arp_request(self, str(dst_addr), forward_entry)
                     else:
                         # when receive packet with the same dst_ip:
+                        exist_entry = self.ip_queue[str(dst_addr)]
+                        exist_entry.append(pkt)
+                        self.ip_queue[str(dst_addr)] = exist_entry
+                        print (self.ip_queue)
+                        # send ARP request
+                        # Router.arp_request(self, str(dst_addr), forward_entry)
+
                         print ("mutliple IP packet with same dst_ip receive inside ip_queue")  
             # handle ARP receive
             # 1. add to ARP table (cache)
@@ -142,14 +150,32 @@ class Router(object):
                     if str(send_ip) in self.ip_queue:
                         # update Ethernet header
                         packet = self.ip_queue[str(send_ip)][0]
-                        packet[0].src = recv_mac
-                        packet[0].dst = send_mac
-                        # delete IP_pkt from queue
-                        # TODO: handle if no entry in ip_queue, dont crach
-                        del self.ip_queue[str(send_ip)]
-                        # send IP_pkt to dest host in layer2
-                        self.net.send_packet(dev, packet)
-            
+                        # regular IP_queue items
+                        if len(self.ip_queue[str(send_ip)]) == 4:
+                            packet[0].src = recv_mac
+                            packet[0].dst = send_mac
+                            # delete IP_pkt from queue
+                            # TODO: handle if no entry in ip_queue, dont crach
+                            del self.ip_queue[str(send_ip)]
+                            # send IP_pkt to dest host in layer2
+                            self.net.send_packet(dev, packet)
+                        else:
+                            pkt_num = len(self.ip_queue[str(send_ip)]) - 3
+                            while (pkt_num > 1):
+                                index = pkt_num + 3
+                                packet = self.ip_queue[str(send_ip)][index]
+                                packet[0].src = recv_mac
+                                packet[0].dst = send_mac
+                                print ("here!!!")
+                                self.net.send_packet(dev, packet)
+                                pkt_num = pkt_num - 1
+                            packet = self.ip_queue[str(send_ip)][0]
+                            packet[0].src = recv_mac
+                            packet[0].dst = send_mac
+                            del self.ip_queue[str(send_ip)]
+                            self.net.send_packet(dev, packet)
+
+
             # check ip_queue: 
             if bool(self.ip_queue):
                 tmp_queue = {}
@@ -170,7 +196,7 @@ class Router(object):
                     #print ("tmp_queue_after: ", tmp_queue)
                 self.ip_queue = tmp_queue
                 #print (self.ip_queue)
-
+            print (self.ip_queue)
 
 
     def arp_request(self, targetip, forward_entry):

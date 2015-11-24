@@ -76,6 +76,7 @@ def forwarding_arp_tests():
     arpreq5 = create_ip_arp_request("10:00:00:00:00:03", "172.16.42.1", "192.168.1.123")
     arpresp5 = mk_arpresp(arpreq5, "10:00:00:00:00:08") # , "10:00:00:00:00:03", "172.16.42.2", "172.16.42.1")
 
+    arpreq6 = create_ip_arp_request("10:00:00:00:00:03", "172.16.42.1", "192.168.1.1") 
 
 
     arpreq2 = create_ip_arp_request("10:00:00:00:00:01", "192.168.1.1", "192.168.1.100")
@@ -100,28 +101,19 @@ def forwarding_arp_tests():
              "Router should receive ARP request from 172.16.42.1 on router-eth2 interface")
     s.expect(PacketOutputEvent("router-eth2", arpresp3, display=Arp),
              "Router should send ARP reply for 192.168.1.1 out router-eth2 interface")
- 
-    # timeout for 2 sec, check if count in queue update, and excess count of 5 test: 
-    s.expect(PacketInputTimeoutEvent(2.0), "Time out for 10 seconds")
-     
-
-     
-    #s.expect(PacketInputEvent("router-eth2", arpresp, display=Arp),
-             #"Router should receive ARP response for 172.16.42.2 on router-eth2 interface")
-    #s.expect(PacketOutputEvent("router-eth2", reqpkt2, display=IPv4, exact=False, predicates=[ttlmatcher]),
-             #"IP packet should be forwarded to 172.16.42.2 out router-eth2")
+    
+    
+    s.expect(PacketInputEvent("router-eth2", arpresp, display=Arp),
+             "Router should receive ARP response for 172.16.42.2 on router-eth2 interface")
+    s.expect(PacketOutputEvent("router-eth2", reqpkt2, display=IPv4, exact=False, predicates=[ttlmatcher]),
+             "IP packet should be forwarded to 172.16.42.2 out router-eth2")
 
 
     s.expect(PacketInputEvent("router-eth2", resppkt, display=IPv4),
              "IP packet to be forwarded to 192.168.1.100 should arrive on router-eth2")
     s.expect(PacketOutputEvent("router-eth0", arpreq2, display=Arp),
              "Router should send ARP request for 192.168.1.100 out router-eth0")
-    
-
-
  ############################ test resend APR requet inside queue #########
-    s.expect(PacketOutputEvent("router-eth2", arpreq4, display=Arp),
-             "Resend ARP request for 172.16.42.2 out router-eth2")
    
 ####### ARP received with no match in IP-queue table should not crash #####
     s.expect(PacketInputEvent("router-eth0", arpresp5, display=Arp),
@@ -131,7 +123,19 @@ def forwarding_arp_tests():
              "Router should receive ARP response for 192.168.1.100 on router-eth0")
     s.expect(PacketOutputEvent("router-eth0", resppkt2, display=IPv4, exact=False, predicates=[ttlmatcher]),
              "IP packet should be forwarded to 192.168.1.100 out router-eth0")
-
+############################# Test when same dst_ip IPv4 pkt recieve same time#####################
+    s.expect(PacketInputEvent("router-eth0", reqpkt, display=IPv4), 
+             "IP packet to be forwarded to 172.16.42.2 should arrive on router-eth0")
+    s.expect(PacketOutputEvent("router-eth2", arpreq, display=Arp),
+             "Router should send ARP request for 172.16.42.2 out router-eth2 interface")    
+    s.expect(PacketInputEvent("router-eth0", reqpkt, display=IPv4), 
+             "IP packet to be forwarded to 172.16.42.2 should arrive on router-eth0")
+    # test for receving a request to interface ip of router, <> store in cache? correctly handle ARP request?? 
+    s.expect(PacketInputEvent("router-eth2", arpreq3, display=Arp),
+             "Router should receive ARP request from 172.16.42.1 on router-eth2 interface")
+    s.expect(PacketOutputEvent("router-eth2", arpresp3, display=Arp),
+             "Router should send ARP reply for 192.168.1.1 out router-eth2 interface")
+    s.expect(PacketOutputEvent("router-eth2", arpresp3, display=Arp),
+             "Router should send ARP reply for 192.168.1.1 out router-eth2 interface")
     return s
-
 scenario = forwarding_arp_tests()
