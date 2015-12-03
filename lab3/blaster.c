@@ -59,6 +59,16 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
+
+ //this struct construct the packet to be sent
+  struct packet
+  {
+    char 	type;		//D = DATA, E = END, C = ECHO
+    uint32_t 	sequence;	//increase in the number of payload octets
+    uint32_t	length;		//number of octets in the payload
+    char	*payload[];	//vaiable size
+  };
+
   //valid input command
   if (argc != 15)
   {

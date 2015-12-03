@@ -32,11 +32,11 @@ int main(int argc, char *argv[])
 
   int blastee_socket;
   struct sockaddr_in sa;
-  int bytes_sent;
-  char buffer[200];
+  //int bytes_sent; Variable to be used, comment to eliminate warning
+  //char buffer[200]; Variable to be used, comment to eliminate warning
 
   /* create an UDP socket*/
-  if(-1 == blastee_socket = socket(AF_INET, SOCK_DGRAM, 0))
+  if(-1 == (blastee_socket = socket(AF_INET, SOCK_DGRAM, 0)))
   {
     error("Socket() failed\n");
   }
@@ -47,6 +47,6 @@ int main(int argc, char *argv[])
   sa.sin_family = AF_INET;
 
 
-
-
+  //TODO: return 0 for now, modify later
+  return 0;
 }
