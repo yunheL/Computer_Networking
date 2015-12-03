@@ -62,13 +62,13 @@ int main(int argc, char *argv[])
   //valid input command
   if (argc != 15)
   {
-    error("Command line argument number error\n");
+    error("Blaster command line argument number error\n");
     exit(1);
   }  
 
   //instantiate the udp socket
   //socket(AF_INET, socket_type, protocol),read more on Man page
-  int udp_socket = socket(AF_INET, SOCK_DGRAM, 0);
+  int blaster_socket = socket(AF_INET, SOCK_DGRAM, 0);
   //read the detailed information about the struct in previous comment
   struct sockaddr_in sa;
   //data byte count
@@ -78,7 +78,7 @@ int main(int argc, char *argv[])
   //potbug: How to determine the size of the buffer
   int buf_size = 50*1024; //as length < 50KB
   char buffer[buf_size];
-  int msg_size = atoi(argv[13]);
+  int msg_size = atoi(argv[12]);
 
   //a.b when a is an object; a->b when a is a pointer to an object
   memset(&sa, 0, sizeof sa);
@@ -91,14 +91,14 @@ int main(int argc, char *argv[])
   //set port number as specified by command line, because port number is 
   //in the range[1024, 65536], so 16-bit short should be enough. Also
   //specified on textbook page.393
-  sa.sin_port = htons(atoi(argv[5]));
+  sa.sin_port = htons(atoi(argv[4]));
   fromlen = sizeof(sa);
 
   //bind() assigns the address specified by addr to the socket referred to by
   //the file descriptor sockfd. addrlen spcifies the size, in bytes, of the address
   //structure pointed to by addr.
   //int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);  
-  if(-1 == bind(udp_socket, (struct sockaddr *) &sa, fromlen))
+  if(-1 == bind(blaster_socket, (struct sockaddr *) &sa, fromlen))
   {
      error("bind() failed\n"); 
   }
@@ -112,7 +112,7 @@ int main(int argc, char *argv[])
     //struct sockaddr *src_addr, socklen_t *addrlen)
     //TODO: Question: so the reason I don't need to use &buffer here is that buffer
     //is an array and buffer will server as the base address?
-    recvsize = recvfrom(udp_socket, (void*)buffer, msg_size, 0,(struct sockaddr*) &sa, &fromlen);
+    recvsize = recvfrom(blaster_socket, (void*)buffer, msg_size, 0,(struct sockaddr*) &sa, &fromlen);
     if(recvsize < 0)
     {
       error("recvfrom failure");
