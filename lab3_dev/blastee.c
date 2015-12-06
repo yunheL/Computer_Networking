@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   memset(&sa, 0, sizeof sa);
   sa.sin_family = AF_INET;
   //TODO what is the INADDR_ANY here
-  sa.sin_addr.s_addr = inet_addr("127.0.0.123");
+  sa.sin_addr.s_addr = inet_addr("127.0.0.1");
   sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
 
@@ -55,6 +55,8 @@ int main(int argc, char *argv[])
   {
      error("bind() failed\n");
   }
+
+  listen(blastee_socket, 2);
 
   printf("here\n");
   for (;;)
@@ -65,9 +67,11 @@ int main(int argc, char *argv[])
     {
       error("error: recsive < 0");
     }
-    printf("datagram: %.*s\n", (int)recsize, buffer);
+    //printf("datagram: %.*s\n", (int)recsize, buffer);
+    printf("datagram: %s\n", buffer);
   }
 
+  close(blastee_socket);
   //TODO: return 0 for now, modify later
   return 0;
 }
