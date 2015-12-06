@@ -23,12 +23,14 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
+  printf("here!\n");
   //valid input command
   if (argc != 5)
   {
     error("Blastee command line argument number error\n");
     exit(1);
   }
+  printf("argv[2] is: %s + argv[4]: %s\n", argv[2], argv[4]);
 
   int blastee_socket;
   struct sockaddr_in sa;
@@ -45,8 +47,8 @@ int main(int argc, char *argv[])
   memset(&sa, 0, sizeof sa);
   sa.sin_family = AF_INET;
   //TODO what is the INADDR_ANY here
-  sa.sin_addr.s_addr = htonl(INADDR_ANY);
-  sa.sin_port = htons(atoi(argv[3]));
+  sa.sin_addr.s_addr = inet_addr("127.0.0.123");
+  sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
 
   if(-1 == bind(blastee_socket, (struct sockaddr *) &sa, fromlen))
@@ -54,6 +56,7 @@ int main(int argc, char *argv[])
      error("bind() failed\n");
   }
 
+  printf("here\n");
   for (;;)
   {
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);

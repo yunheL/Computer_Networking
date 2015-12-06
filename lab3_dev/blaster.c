@@ -38,6 +38,7 @@ int main(int argc, char *argv[])
     exit(1);
   }  
 
+  printf("host: %s, port: %s\n", argv[2], argv[4]);
   //instantiate the udp socket
   //socket(AF_INET, socket_type, protocol),read more on Man page
   int blaster_socket = socket(AF_INET, SOCK_DGRAM, 0);
@@ -62,16 +63,16 @@ int main(int argc, char *argv[])
   //potbug: htonl, does we use long?
   //htonl() functoin converts the unsigned integer hostlong from host byte
   //potbug: INADDR_ANY
-  sa.sin_addr.s_addr = htonl(INADDR_ANY);
+  sa.sin_addr.s_addr = inet_addr(argv[2]);
   sa.sin_port = htons(atoi(argv[4]));
   fromlen = sizeof(sa);
 
-  if(-1 == bind(blaster_socket, (struct sockaddr *) &sa, fromlen))
+  if(-1 == connect(blaster_socket, (struct sockaddr *) &sa, fromlen))
   {
      error("bind() failed\n"); 
   }
 
-  blastee_sa.sin_addr.s_addr = inet_addr(argv[3]);
+  blastee_sa.sin_addr.s_addr = inet_addr(argv[2]);
   blastee_sa.sin_port = htons(atoi(argv[4])); 
 
   bytes_sent = sendto(blaster_socket, buffer, strlen(buffer), 0, (struct sockaddr*)&sa, sizeof sa);
