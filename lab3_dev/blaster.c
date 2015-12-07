@@ -83,13 +83,18 @@ int main(int argc, char *argv[])
   //prinf("port number is : ");
   fromlen = sizeof(blastee_sa);
 
+/*
   if(-1 == connect(blaster_socket, (struct sockaddr*) &blastee_sa, fromlen))
   {
      error("connect() failed\n"); 
   }
+*/
 
   bytes_sent = sendto(blaster_socket, buffer, strlen(buffer), 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
-  
+  printf("bytes_sent is %d\n", bytes_sent);
+  printf("sent to host %s, port %hd\n",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
+
+ 
   if(bytes_sent < 0)
   {
     error("bytes_sent < 0\n");
