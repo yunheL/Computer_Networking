@@ -74,9 +74,10 @@ int main(int argc, char *argv[])
 
   blastee_sa.sin_addr.s_addr = inet_addr(argv[2]);
   blastee_sa.sin_port = htons(atoi(argv[4])); 
+  printf("%d\n", atoi(argv[4]));
 
   bytes_sent = sendto(blaster_socket, buffer, strlen(buffer), 0, (struct sockaddr*)&sa, sizeof sa);
-  
+  printf("buffer: %s\n", buffer); 
   if(bytes_sent < 0)
   {
     error("bytes_sent < 0\n");

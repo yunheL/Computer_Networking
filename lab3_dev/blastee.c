@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
   memset(&sa, 0, sizeof sa);
   sa.sin_family = AF_INET;
   //TODO what is the INADDR_ANY here
-  sa.sin_addr.s_addr = inet_addr("127.0.0.123");
+  sa.sin_addr.s_addr = inet_addr("127.0.0.1");
   sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
 
