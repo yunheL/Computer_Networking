@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 
   int blastee_socket;
   struct sockaddr_in sa;
-  char buffer[200];
+  char buffer[1000];
   ssize_t recsize;
   socklen_t fromlen;
 
@@ -48,6 +48,9 @@ int main(int argc, char *argv[])
   sa.sin_family = AF_INET;
   //TODO what is the INADDR_ANY here
   sa.sin_addr.s_addr = inet_addr("127.0.0.1");
+  //sa.sin_addr.s_addr = htonl(INADDR_ANY);
+  
+  printf("binding to address: %s", inet_ntoa(sa.sin_addr));
   sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
 
@@ -56,18 +59,39 @@ int main(int argc, char *argv[])
      error("bind() failed\n");
   }
 
-  printf("here\n");
+/*
+  if(-1 == listen(blastee_socket, 2))
+  {
+     error("listen() failed");
+  }
+*/
+
+/*
+  int acceptfd;
+  acceptfd = (blastee_socket, (struct sockaddr *) &sa, fromlen)
+  if(acceptfd < 0)
+  {
+     error("accept() failed");
+  }
+
+  printf("The accepted socket is %d", accetpfd);
+*/
+  printf("here????????\n");
   for (;;)
   {
+    printf("Here4!!!!!!!"); 
+    fflush(stdout);
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);
-
+    printf("Here3");
     if(recsize < 0)
     {
       error("error: recsive < 0");
     }
-    printf("datagram: %.*s\n", (int)recsize, buffer);
+    //printf("datagram: %.*s\n", (int)recsize, buffer);
+    printf("datagram: %s\n", buffer);
   }
 
+  close(blastee_socket);
   //TODO: return 0 for now, modify later
   return 0;
 }

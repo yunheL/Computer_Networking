@@ -41,12 +41,17 @@ int main(int argc, char *argv[])
   printf("host: %s, port: %s\n", argv[2], argv[4]);
   //instantiate the udp socket
   //socket(AF_INET, socket_type, protocol),read more on Man page
-  int blaster_socket = socket(AF_INET, SOCK_DGRAM, 0);
+  int blaster_socket;
+  blaster_socket = socket(AF_INET, SOCK_DGRAM, 0);
+  if(-1 == blaster_socket)
+  {
+    error("socekt create failed");
+  }
   //read the detailed information about the struct in previous comment
-  struct sockaddr_in sa;
+  //struct sockaddr_in sa;
   struct sockaddr_in blastee_sa;
   //data byte count
-  socklen_t fromlen;
+  //socklen_t fromlen;
   //ssize_t recvsize;
   //TODO: How should I determine the size of the buffer
   //potbug: How to determine the size of the buffer
@@ -54,30 +59,42 @@ int main(int argc, char *argv[])
   char buffer[buf_size];
   //int msg_size = atoi(argv[12]);
   int bytes_sent;
-
   
   strcpy(buffer, "Hello world! Transmission success!");
   //a.b when a is an object; a->b when a is a pointer to an object
-  memset(&sa, 0, sizeof sa);
-  sa.sin_family = AF_INET;
+  //memset(&sa, 0, sizeof sa);
+
   //potbug: htonl, does we use long?
   //htonl() functoin converts the unsigned integer hostlong from host byte
   //potbug: INADDR_ANY
+  
+/*
+  sa.sin_family = AF_INET;
   sa.sin_addr.s_addr = inet_addr(argv[2]);
-  sa.sin_port = htons(atoi(argv[4]));
-  fromlen = sizeof(sa);
+  sa.sin_port = htons(1025);
+  
+*/
 
-  if(-1 == connect(blaster_socket, (struct sockaddr *) &sa, fromlen))
-  {
-     error("bind() failed\n"); 
-  }
+  memset(&blastee_sa, 0, sizeof blastee_sa);
 
+  blastee_sa.sin_family = AF_INET;
   blastee_sa.sin_addr.s_addr = inet_addr(argv[2]);
   blastee_sa.sin_port = htons(atoi(argv[4])); 
-  printf("%d\n", atoi(argv[4]));
 
-  bytes_sent = sendto(blaster_socket, buffer, strlen(buffer), 0, (struct sockaddr*)&sa, sizeof sa);
-  printf("buffer: %s\n", buffer); 
+  //prinf("port number is : ");
+
+/*
+  if(-1 == connect(blaster_socket, (struct sockaddr*) &blastee_sa, fromlen))
+  {
+     error("connect() failed\n"); 
+  }
+*/
+
+  bytes_sent = sendto(blaster_socket, buffer, strlen(buffer), 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
+  printf("bytes_sent is %d\n", bytes_sent);
+  printf("sent to host %s, port %hd\n",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
+
+ 
   if(bytes_sent < 0)
   {
     error("bytes_sent < 0\n");

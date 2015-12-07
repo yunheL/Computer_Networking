@@ -1,1 +1,1 @@
-blastee -p 1025 -c 0
+./blastee -p 1027 -c 0
