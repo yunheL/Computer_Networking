@@ -80,3 +80,6 @@ put most background knowledge in this README and blaster comment area.
 Pushed blaster basic structure (constructed basic UDP server socket).
 Compiles but lakc of functionality.
 Need to figure out how to construct and transmit packet.
+
+12/6 7pm  
+Successfully connection between blaster.c and blastee.c  
