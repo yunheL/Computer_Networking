@@ -83,3 +83,6 @@ Need to figure out how to construct and transmit packet.
 
 12/06 7:00pm
 Connect success.
+
+12/11 2:57am
+Packet receive success. All parts of packets correct.
