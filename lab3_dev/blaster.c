@@ -75,9 +75,10 @@ int main(int argc, char *argv[])
     //work on sequence wrap around
     pkt0.sequence = atoi(argv[12]) + i;
     memset(pkt0.payload, 0, sizeof pkt0.payload);
-    strcpy(pkt0.payload, "This this is packet");
+    //strcpy(pkt0.payload, "This this is packet ");
     //TODO double check this number
-    memcpy(pkt0.payload+21, &i, 4);
+    //memcpy(pkt0.payload+21, &i, 4);
+    sprintf(pkt0.payload, "This is pakcet%d", i);
     pkt0.length = strlen(pkt0.payload);
 
    //copy pkt0 into buffer

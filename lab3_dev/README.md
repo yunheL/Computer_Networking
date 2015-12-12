@@ -88,5 +88,12 @@ Connect success.
 Need to figure out how to construct and transmit packet.
 
 12/6 7pm  
-Successfully connection between blaster.c and blastee.c  
+Successfully connection between blaster.c and blastee.c 
+
+###TODO list  
+1.implement wrap around  
+2.implement echo functionality  
+3.implment sending rate functonality  
+4.don't forget to do print formatting double check  
+ 
 >>>>>>> a2a4ddbd956f8dbcd60c83fcbe417db07c2a9bf2
