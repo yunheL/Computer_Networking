@@ -67,6 +67,7 @@ int main(int argc, char *argv[])
     //fflush(stdout);
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);
     //printf("Here3");
+    printf("recsize = %d\n", recsize);
     if(recsize < 0)
     {
       error("error: recsive < 0");
@@ -76,27 +77,57 @@ int main(int argc, char *argv[])
     char data;
     memcpy(&data, buffer, 1);    
 
-    char seq[4];
-    memcpy(seq, buffer+1, 4);
+    //char seq[4];
+    //memcpy(seq, buffer+1, 4);
     uint32_t sequence;
-    sequence = ntohl(*seq);
+    memcpy(&sequence, buffer+1, 4);
+    sequence = ntohl(sequence);
+    //sequence = atoi(*seq);
 
-    char len[4];
-    memcpy(len, buffer+5, 4);
+    //char len[4];
+    //memcpy(len, buffer+5, 4);
     uint32_t length;
-    length = ntohl(*len);
+    memcpy(&length, buffer+5, 4);
+    length = ntohl(length);
+    //length = atoi(*len);
 
     char payload[50*1024];
     memcpy(payload, buffer+9, 50*1024);
+/*
+    int j = 0;
+    for(j = 0; j < 4; j++)
+    {
+      printf("raw sequence[%d] is %d\n", j, seq[j]);
+    }
 
-    printf("raw sequence is %c%c%c%c\n", seq[0], seq[1], seq[2], seq[3]);
-    printf("raw length is %s\n", len);
-    printf("raw payload is %s\n", payload); 
+     for(j = 0; j < 4; j++)
+    {
+      printf("sequence[j] is %d\n", sequence[j]);
+    }  
+*/    
+    //printf("raw sequence is %d%c%c%c\n", atoi(seq[0]), seq[1], seq[2], seq[3]);
+    //printf("raw length is %s\n", len);
+    //printf("raw payload is %s\n", payload); 
 
     printf("data: %c\n", data);
     printf("sequence: %d\n", sequence);
     printf("length: %d\n", length);
-    printf("payload: %s\n", payload);
+    
+    printf("payload: ");
+    int i = 0;
+    for(i = 0; i < 40; i++)
+    {
+      printf("%c", payload[i]);
+    }
+    printf("\n");
+
+    //int i = 0;
+    for(i = 0; i < 100; i++)
+    {
+      printf("buffer[%d] is: %c\n", i, buffer[i]);
+    }
+
+
   }
 
   close(blastee_socket);

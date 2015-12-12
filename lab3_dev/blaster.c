@@ -64,11 +64,13 @@ int main(int argc, char *argv[])
   struct packet pkt0;
   pkt0.type = 'D';
   pkt0.sequence = atoi(argv[12]);
+  printf("test pkt sequence: %d\n", pkt0.sequence);
   memset(pkt0.payload, 0, sizeof pkt0.payload);
   printf("this is the size of the payload: %d\n", sizeof pkt0.payload);
   strcpy(pkt0.payload, "This this is packet0");
+  printf("test pkt payload: %s\n", pkt0.payload); 
   pkt0.length = strlen(pkt0.payload);
-
+  printf("test pkt length: %d\n", pkt0.length);
   //convert packet to a string
   //char strToGo[50 * 1024 + 9 * 4];
   //memset(&strToGo, 0, sizeof strToGo);
@@ -82,6 +84,9 @@ int main(int argc, char *argv[])
   //buffer = pkt0;
   //strcpy(buffer, pkt0);
   //strcpy(buffer, "Hello world! Transmission success!");
+  
+  //memcpy(buffer, &pkt0, 9*4 + 50*1024);
+
   memcpy(buffer, &pkt0.type, 1);
   uint32_t seq;
   seq = htonl(pkt0.sequence);
@@ -91,6 +96,17 @@ int main(int argc, char *argv[])
   memcpy(buffer+5, &len, 4);
   memcpy(buffer+9, &pkt0.payload, sizeof pkt0.payload);
 
+  int i = 0;
+  for(i = 1; i < 5; i++)
+  {
+    //printf("buff[%d] is: %c\n", i, buffer[i]);
+  }
+ 
+  //int i = 0;
+  for(i = 0; i < 100; i++)
+  {
+    printf("buffer[%d] is: %c\n", i, buffer[i]);
+  }
   //char sequenceTest[4];
   //char lengthTest[4];
   //char payloadTest[50*1024];
@@ -106,7 +122,7 @@ int main(int argc, char *argv[])
   //prinf("port number is : ");
   fromlen = sizeof(blastee_sa);
 
-  bytes_sent = sendto(blaster_socket, buffer, strlen(buffer), 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
+  bytes_sent = sendto(blaster_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
   printf("bytes_sent is %d\n", bytes_sent);
   printf("sent to host %s, port %hd\n",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
 
