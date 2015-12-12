@@ -23,7 +23,6 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
-  //printf("here!\n");
   //valid input command
   if (argc != 5)
   {
@@ -44,6 +43,7 @@ int main(int argc, char *argv[])
     error("Socket() failed\n");
   }
 
+  /* set socket parameter */
   memset(&sa, 0, sizeof sa);
   sa.sin_family = AF_INET;
   //TODO what is the INADDR_ANY here
@@ -54,25 +54,26 @@ int main(int argc, char *argv[])
   sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
 
+  /* bind socket to address */
   if(-1 == bind(blastee_socket, (struct sockaddr *) &sa, fromlen))
   {
      error("bind() failed\n");
   }
-
-  //printf("here????????\n");
+  
+  /* keep receiving */
+  //TODO implement END mechanism
   for (;;)
   {
-    printf("receive success!\n");
-    //printf("Here4!!!!!!!"); 
     //fflush(stdout);
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);
-    //printf("Here3");
+ 
+    printf("receive success! ");
     printf("recsize = %d\n", recsize);
+    
     if(recsize < 0)
     {
       error("error: recsive < 0");
     }
-    //printf("datagram: %.*s\n", (int)recsize, buffer);
 
     char data;
     memcpy(&data, buffer, 1);    
@@ -93,42 +94,28 @@ int main(int argc, char *argv[])
 
     char payload[50*1024];
     memcpy(payload, buffer+9, 50*1024);
-/*
-    int j = 0;
-    for(j = 0; j < 4; j++)
-    {
-      printf("raw sequence[%d] is %d\n", j, seq[j]);
-    }
 
-     for(j = 0; j < 4; j++)
-    {
-      printf("sequence[j] is %d\n", sequence[j]);
-    }  
-*/    
-    //printf("raw sequence is %d%c%c%c\n", atoi(seq[0]), seq[1], seq[2], seq[3]);
-    //printf("raw length is %s\n", len);
-    //printf("raw payload is %s\n", payload); 
-
-    printf("data: %c\n", data);
-    printf("sequence: %d\n", sequence);
-    printf("length: %d\n", length);
+    printf("received packet: ");
+    printf("data= %c, ", data);
+    printf("sequence= %d, ", sequence);
+    printf("length: %d, ", length);
     
     printf("payload: ");
     int i = 0;
-    for(i = 0; i < 40; i++)
+    for(i = 0; i < 32; i++)
     {
       printf("%c", payload[i]);
     }
     printf("\n");
-
+  }
+/*
     //int i = 0;
     for(i = 0; i < 100; i++)
     {
       printf("buffer[%d] is: %c\n", i, buffer[i]);
     }
-
-
   }
+*/
 
   close(blastee_socket);
   //TODO: return 0 for now, modify later

@@ -47,14 +47,11 @@ int main(int argc, char *argv[])
   {
     error("socekt create failed");
   }
-  //read the detailed information about the struct in previous comment
   //struct sockaddr_in sa;
   struct sockaddr_in blastee_sa;
   //data byte count
   socklen_t fromlen;
   //ssize_t recvsize;
-  //TODO: How should I determine the size of the buffer
-  //potbug: How to determine the size of the buffer
   int buf_size = 50*1024 + 4*9; //as length < 50KB
   char buffer[buf_size];
   //int msg_size = atoi(argv[12]);
@@ -64,29 +61,11 @@ int main(int argc, char *argv[])
   struct packet pkt0;
   pkt0.type = 'D';
   pkt0.sequence = atoi(argv[12]);
-  printf("test pkt sequence: %d\n", pkt0.sequence);
   memset(pkt0.payload, 0, sizeof pkt0.payload);
-  printf("this is the size of the payload: %d\n", sizeof pkt0.payload);
   strcpy(pkt0.payload, "This this is packet0");
-  printf("test pkt payload: %s\n", pkt0.payload); 
   pkt0.length = strlen(pkt0.payload);
-  printf("test pkt length: %d\n", pkt0.length);
-  //convert packet to a string
-  //char strToGo[50 * 1024 + 9 * 4];
-  //memset(&strToGo, 0, sizeof strToGo);
 
-  //pkt0.sequence = itoa(atoi(argv[12]));
-  //pkt0.length = itoa(1);
-  //itoa(atoi(argv[12]), &pkt0.sequence, 10);
-  //itoa(1, &pkt0.length, 10);
-  //pkt0.payload = 't';
-
-  //buffer = pkt0;
-  //strcpy(buffer, pkt0);
-  //strcpy(buffer, "Hello world! Transmission success!");
-  
-  //memcpy(buffer, &pkt0, 9*4 + 50*1024);
-
+ //copy pkt0 into buffer
   memcpy(buffer, &pkt0.type, 1);
   uint32_t seq;
   seq = htonl(pkt0.sequence);
@@ -96,24 +75,13 @@ int main(int argc, char *argv[])
   memcpy(buffer+5, &len, 4);
   memcpy(buffer+9, &pkt0.payload, sizeof pkt0.payload);
 
-  int i = 0;
-  for(i = 1; i < 5; i++)
-  {
-    //printf("buff[%d] is: %c\n", i, buffer[i]);
-  }
- 
+/*
   //int i = 0;
   for(i = 0; i < 100; i++)
   {
     printf("buffer[%d] is: %c\n", i, buffer[i]);
   }
-  //char sequenceTest[4];
-  //char lengthTest[4];
-  //char payloadTest[50*1024];
-  printf("sequence is %d\n", seq);
-  printf("length is %d\n", len);
-  printf("payload is %s\n", pkt0.payload);
-
+*/
   memset(&blastee_sa, 0, sizeof blastee_sa);
 
   blastee_sa.sin_family = AF_INET;
@@ -123,9 +91,23 @@ int main(int argc, char *argv[])
   fromlen = sizeof(blastee_sa);
 
   bytes_sent = sendto(blaster_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
-  printf("bytes_sent is %d\n", bytes_sent);
-  printf("sent to host %s, port %hd\n",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
 
+
+  printf("sent to host %s, port %hd, ",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
+  printf("bytes_sent is %d\n", bytes_sent);
+  
+  printf("sent packet: ");
+  printf("data = %c, ", pkt0.type);
+  /*
+  //this is the encrypted set for testing
+  printf("sequence is %d, ", seq);
+  printf("length is %d, ", len);
+  printf("payload is %s\n", pkt0.payload);
+  */
+  printf("sequence= %d, ", pkt0.sequence);
+  printf("length= %d, ", pkt0.length);
+  printf("payload= %s, ", pkt0.payload); 
+  printf("\n");
  
   if(bytes_sent < 0)
   {
