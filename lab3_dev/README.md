@@ -79,7 +79,14 @@ Is this correct? Is seq# and payload(4 bit) on the same line?
 put most background knowledge in this README and blaster comment area.
 Pushed blaster basic structure (constructed basic UDP server socket).
 Compiles but lakc of functionality.
+<<<<<<< HEAD
 Need to figure out how to construct and transmit packet.  
 
 12/06 7:00pm
 Connect success.
+=======
+Need to figure out how to construct and transmit packet.
+
+12/6 7pm  
+Successfully connection between blaster.c and blastee.c  
+>>>>>>> a2a4ddbd956f8dbcd60c83fcbe417db07c2a9bf2
