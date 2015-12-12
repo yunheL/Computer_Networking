@@ -23,14 +23,14 @@ void error(const char *msg)
 
 int main(int argc, char *argv[])
 {
-  printf("here!\n");
+  //printf("here!\n");
   //valid input command
   if (argc != 5)
   {
     error("Blastee command line argument number error\n");
     exit(1);
   }
-  printf("argv[2] is: %s + argv[4]: %s\n", argv[2], argv[4]);
+  //printf("argv[2] is: %s + argv[4]: %s\n", argv[2], argv[4]);
 
   int blastee_socket;
   struct sockaddr_in sa;
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
   sa.sin_addr.s_addr = inet_addr("127.0.0.1");
   //sa.sin_addr.s_addr = htonl(INADDR_ANY);
   
-  printf("binding to address: %s", inet_ntoa(sa.sin_addr));
+  //printf("binding to address: %s", inet_ntoa(sa.sin_addr));
   sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
 
@@ -76,19 +76,22 @@ int main(int argc, char *argv[])
 
   printf("The accepted socket is %d", accetpfd);
 */
-  printf("here????????\n");
   for (;;)
   {
-    printf("Here4!!!!!!!"); 
     fflush(stdout);
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);
-    printf("Here3");
     if(recsize < 0)
     {
       error("error: recsive < 0");
     }
-    //printf("datagram: %.*s\n", (int)recsize, buffer);
-    printf("datagram: %s\n", buffer);
+    
+	uint32_t recv;
+	uint32_t recv_decode;
+	memcpy(&recv, &buffer, 4);
+    recv_decode = ntohl(recv);
+	//printf("datagram: %.*s\n", (int)recsize, buffer);
+    printf("recv: %d\n", recv);
+	printf("recv_decode: %d\n", recv_decode);
   }
 
   close(blastee_socket);
