@@ -56,64 +56,79 @@ int main(int argc, char *argv[])
   char buffer[buf_size];
   //int msg_size = atoi(argv[12]);
   int bytes_sent;
-  
-  //construct first packet
-  struct packet pkt0;
-  pkt0.type = 'D';
-  pkt0.sequence = atoi(argv[12]);
-  memset(pkt0.payload, 0, sizeof pkt0.payload);
-  strcpy(pkt0.payload, "This this is packet0");
-  pkt0.length = strlen(pkt0.payload);
-
- //copy pkt0 into buffer
-  memcpy(buffer, &pkt0.type, 1);
-  uint32_t seq;
-  seq = htonl(pkt0.sequence);
-  memcpy(buffer+1, &seq, 4);
-  uint32_t len;
-  len = htonl(pkt0.length);
-  memcpy(buffer+5, &len, 4);
-  memcpy(buffer+9, &pkt0.payload, sizeof pkt0.payload);
-
-/*
-  //int i = 0;
-  for(i = 0; i < 100; i++)
-  {
-    printf("buffer[%d] is: %c\n", i, buffer[i]);
-  }
-*/
-  memset(&blastee_sa, 0, sizeof blastee_sa);
-
-  blastee_sa.sin_family = AF_INET;
-  blastee_sa.sin_addr.s_addr = inet_addr(argv[2]);
-  blastee_sa.sin_port = htons(atoi(argv[4])); 
-  //prinf("port number is : ");
-  fromlen = sizeof(blastee_sa);
-
-  bytes_sent = sendto(blaster_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
-
-
-  printf("sent to host %s, port %hd, ",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
-  printf("bytes_sent is %d\n", bytes_sent);
-  
-  printf("sent packet: ");
-  printf("data = %c, ", pkt0.type);
-  /*
-  //this is the encrypted set for testing
-  printf("sequence is %d, ", seq);
-  printf("length is %d, ", len);
-  printf("payload is %s\n", pkt0.payload);
-  */
-  printf("sequence= %d, ", pkt0.sequence);
-  printf("length= %d, ", pkt0.length);
-  printf("payload= %s, ", pkt0.payload); 
-  printf("\n");
+  int packet_number = atoi(argv[8]);
  
-  if(bytes_sent < 0)
-  {
-    error("bytes_sent < 0\n");
-  }
+  int i = 0;
+  for(i = 0; i<packet_number;i++)
+  { 
+    //construct first packet
+    struct packet pkt0;
+    
+    if(i<packet_number-1)
+    {
+      pkt0.type = 'D';
+    }
+    else
+    {
+      pkt0.type = 'E';
+    }
+    //work on sequence wrap around
+    pkt0.sequence = atoi(argv[12]) + i;
+    memset(pkt0.payload, 0, sizeof pkt0.payload);
+    strcpy(pkt0.payload, "This this is packet");
+    //TODO double check this number
+    memcpy(pkt0.payload+21, &i, 4);
+    pkt0.length = strlen(pkt0.payload);
 
+   //copy pkt0 into buffer
+    memcpy(buffer, &pkt0.type, 1);
+    uint32_t seq;
+    seq = htonl(pkt0.sequence);
+    memcpy(buffer+1, &seq, 4);
+    uint32_t len;
+    len = htonl(pkt0.length);
+    memcpy(buffer+5, &len, 4);
+    memcpy(buffer+9, &pkt0.payload, sizeof pkt0.payload);
+
+  /*
+    //int i = 0;
+    for(i = 0; i < 100; i++)
+    {
+      printf("buffer[%d] is: %c\n", i, buffer[i]);
+    }
+  */
+    memset(&blastee_sa, 0, sizeof blastee_sa);
+
+    blastee_sa.sin_family = AF_INET;
+    blastee_sa.sin_addr.s_addr = inet_addr(argv[2]);
+    blastee_sa.sin_port = htons(atoi(argv[4])); 
+    //prinf("port number is : ");
+    fromlen = sizeof(blastee_sa);
+
+    bytes_sent = sendto(blaster_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
+
+
+    printf("sent to host %s, port %hd, ",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
+    printf("bytes_sent is %d\n", bytes_sent);
+    
+    printf("sent packet: ");
+    printf("data = %c, ", pkt0.type);
+    /*
+    //this is the encrypted set for testing
+    printf("sequence is %d, ", seq);
+    printf("length is %d, ", len);
+    printf("payload is %s\n", pkt0.payload);
+    */
+    printf("sequence= %d, ", pkt0.sequence);
+    printf("length= %d, ", pkt0.length);
+    printf("payload= %s, ", pkt0.payload); 
+    printf("\n");
+ 
+    if(bytes_sent < 0)
+    {
+      error("bytes_sent < 0\n");
+    }
+  }//end of for for sending pakcets
   close(blaster_socket);
   return 0;
 }

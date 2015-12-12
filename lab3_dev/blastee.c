@@ -107,7 +107,12 @@ int main(int argc, char *argv[])
       printf("%c", payload[i]);
     }
     printf("\n");
-  }
+   
+    if (data == 'E')
+    {
+      break;
+    }
+  }//end of for loop of receving packet
 /*
     //int i = 0;
     for(i = 0; i < 100; i++)
@@ -116,8 +121,15 @@ int main(int argc, char *argv[])
     }
   }
 */
-
-  close(blastee_socket);
+  if (-1 == close(blastee_socket))
+  {
+     error("Oops, close() failed");
+  }
+  else
+  {
+     printf("Your socket has been successfully closed, thanks for using Xuyi-Yunhe socket!\n");
+  }
+  
   //TODO: return 0 for now, modify later
   return 0;
 }
