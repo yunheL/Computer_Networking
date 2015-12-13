@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 
     //char seq[4];
     //memcpy(seq, buffer+1, 4);
-    uint32_t sequence;
+    long sequence;
     memcpy(&sequence, buffer+1, 4);
     sequence = ntohl(sequence);
     //sequence = atoi(*seq);
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
 
     printf("received packet: ");
     printf("data= %c, ", data);
-    printf("sequence= %d, ", sequence);
+    printf("sequence= %lu, ", sequence);
     printf("length: %d, ", length);
     
     printf("payload: ");

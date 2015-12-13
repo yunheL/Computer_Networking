@@ -26,7 +26,7 @@ int main(int argc, char *argv[])
   struct packet
   {
     char 	type;			//D = DATA, E = END, C = ECHO
-    uint32_t 	sequence;	//increase in the number of payload octets
+    long 	sequence;	//increase in the number of payload octets
     uint32_t	length;			//number of octets in the payload
     char	payload[50*1024];	//vaiable size
   };
@@ -73,7 +73,16 @@ int main(int argc, char *argv[])
       pkt0.type = 'E';
     }
     //work on sequence wrap around
-    pkt0.sequence = atoi(argv[12]) + i;
+    //printf("argv[12]is: %d\n", (atoi(argv[12])));
+    
+    char *ptr;
+    long unsign_seq;
+
+    unsign_seq = strtoul(argv[12], &ptr, 10);
+    printf("base seq is: %lu\n", unsign_seq);
+
+
+    pkt0.sequence = unsign_seq + i;
     memset(pkt0.payload, 0, sizeof pkt0.payload);
     //strcpy(pkt0.payload, "This this is packet ");
     //TODO double check this number
@@ -83,7 +92,7 @@ int main(int argc, char *argv[])
 
    //copy pkt0 into buffer
     memcpy(buffer, &pkt0.type, 1);
-    uint32_t seq;
+    long seq;
     seq = htonl(pkt0.sequence);
     memcpy(buffer+1, &seq, 4);
     uint32_t len;
@@ -120,7 +129,7 @@ int main(int argc, char *argv[])
     printf("length is %d, ", len);
     printf("payload is %s\n", pkt0.payload);
     */
-    printf("sequence= %d, ", pkt0.sequence);
+    printf("sequence= %lu, ", pkt0.sequence);
     printf("length= %d, ", pkt0.length);
     printf("payload= %s, ", pkt0.payload); 
     printf("\n");

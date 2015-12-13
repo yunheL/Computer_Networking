@@ -95,5 +95,7 @@ Successfully connection between blaster.c and blastee.c
 2.implement echo functionality  
 3.implment sending rate functonality  
 4.don't forget to do print formatting double check  
- 
->>>>>>> a2a4ddbd956f8dbcd60c83fcbe417db07c2a9bf2
+
+###Questions
+1. long is 32-bit?
+2. there are times losing the 'E' packet. only lost this packet won't lost other ones
