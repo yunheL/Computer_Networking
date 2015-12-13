@@ -60,6 +60,16 @@ int main(int argc, char *argv[])
   {
      error("bind() failed\n");
   }
+
+  struct timeval tv;
+
+  tv.tv_sec = 5;  /* 5 Secs Timeout */
+  tv.tv_usec = 0;  // Not init'ing this can cause strange errors
+
+  if (-1 == setsockopt(blastee_socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&tv,sizeof(struct timeval)))
+  {
+    error("ERROR: setsockopt error");
+  }
   
   /* keep receiving */
   //TODO implement END mechanism
@@ -73,7 +83,7 @@ int main(int argc, char *argv[])
     
     if(recsize < 0)
     {
-      error("error: recsive < 0");
+      error("error: recsive < 0, this can happen after 5 sec timeout\n");
     }
 
     char data;
@@ -118,14 +128,8 @@ int main(int argc, char *argv[])
       break;
     }
   }//end of for loop of receving packet
-/*
-    //int i = 0;
-    for(i = 0; i < 100; i++)
-    {
-      printf("buffer[%d] is: %c\n", i, buffer[i]);
-    }
-  }
-*/
+
+
   if (-1 == close(blastee_socket))
   {
      error("Oops, close() failed");
