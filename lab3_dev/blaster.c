@@ -10,6 +10,7 @@
 #include <netdb.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <time.h>
 
 #define EVER ;;
 //function that generates error message
@@ -22,7 +23,7 @@ void error(const char *msg)
 int main(int argc, char *argv[])
 {
 
- //this struct construct the packet to be sent
+  //this struct construct the packet to be sent
   struct packet
   {
     char 	type;			//D = DATA, E = END, C = ECHO
@@ -60,7 +61,7 @@ int main(int argc, char *argv[])
 
   //construct packet
   struct packet pkt0;
- 
+
   char *ptr;
   long unsign_seq;
   long prev_byte_sent;
@@ -111,7 +112,7 @@ int main(int argc, char *argv[])
     pkt0.length = strlen(pkt0.payload);
     prev_byte_sent = pkt0.length;
 
-   //copy pkt0 into buffer
+    //copy pkt0 into buffer
     memcpy(buffer, &pkt0.type, 1);
     long seq;
     seq = htonl(pkt0.sequence);
@@ -121,13 +122,13 @@ int main(int argc, char *argv[])
     memcpy(buffer+5, &len, 4);
     memcpy(buffer+9, &pkt0.payload, sizeof pkt0.payload);
 
-  /*
+    /*
     //int i = 0;
     for(i = 0; i < 100; i++)
     {
-      printf("buffer[%d] is: %c\n", i, buffer[i]);
+    printf("buffer[%d] is: %c\n", i, buffer[i]);
     }
-  */
+    */
     memset(&blastee_sa, 0, sizeof blastee_sa);
 
     blastee_sa.sin_family = AF_INET;
@@ -136,12 +137,61 @@ int main(int argc, char *argv[])
     //prinf("port number is : ");
     fromlen = sizeof(blastee_sa);
 
+    //before send sleep for certain amound of time
+    
+    time_t sec_wait = 0;
+    long nano_wait = 0;
+    long raw_time = 0;
+
+    double raw_rate = atof(argv[6]);
+
+    if(raw_rate > 1.0)
+    {
+      nano_wait = 1000000000/raw_rate;
+    }
+    else if (raw_rate == 1.0)
+    {
+      sec_wait = 1;
+      nano_wait = 0;
+    }
+    else if(raw_rate < 1.0 && raw_rate > 0)
+    {
+      raw_time = 1000000000/raw_rate;
+
+      while(raw_time > 1000000000 || raw_time == 1000000000)
+      {
+        raw_time = raw_time - 1000000000;
+        sec_wait = sec_wait + 1;
+      }
+      nano_wait = (long)raw_time;
+    }
+    else
+    {
+      error("ERROR: send rate cannot be 0 or negative");
+    }
+
+    struct timespec time, time2;
+    time.tv_sec = sec_wait;
+    time.tv_nsec = nano_wait;
+    //time.tv_sec = 1;
+    //time.tv_nsec = 0;
+
+
+    if(nanosleep(&time, &time2) < 0 )   
+    {
+      error("nanosleep() failed");
+    }
+    else
+    {
+      printf("Nano sleep successfull \n"); 
+    }
+
     bytes_sent = sendto(blaster_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
 
 
     printf("sent to host %s, port %hd, ",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
     printf("bytes_sent is %d\n", bytes_sent);
-    
+
     printf("sent packet: ");
     printf("data = %c, ", pkt0.type);
     /*
@@ -154,7 +204,7 @@ int main(int argc, char *argv[])
     printf("length= %d, ", pkt0.length);
     printf("payload= %s, ", pkt0.payload); 
     printf("\n");
- 
+
     if(bytes_sent < 0)
     {
       error("bytes_sent < 0\n");
