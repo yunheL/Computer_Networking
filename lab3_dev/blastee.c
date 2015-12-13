@@ -34,6 +34,7 @@ int main(int argc, char *argv[])
   int blastee_socket;
   struct sockaddr_in sa;
   char buffer[50*1024 + 4*9];
+  //char send_buff[50*1024 + 4*9];
   ssize_t recsize;
   socklen_t fromlen;
 
@@ -108,7 +109,11 @@ int main(int argc, char *argv[])
     }
     printf("\n");
    
-    if (data == 'E')
+    if(data == 'C')
+    {
+      printf("this packet should be echoed\n"); 
+    }
+    else if (data == 'E')
     {
       break;
     }

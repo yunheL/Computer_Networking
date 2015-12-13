@@ -91,11 +91,16 @@ Need to figure out how to construct and transmit packet.
 Successfully connection between blaster.c and blastee.c 
 
 ###TODO list  
-1.implement wrap around  
+1.implement wrap around (done)
 2.implement echo functionality  
 3.implment sending rate functonality  
 4.don't forget to do print formatting double check  
+5.blastee print formatting check
+6.blastee timeout
+
+###TIPS: Can use nanosleep to do send rate control. At receiver side, when want to print the average sending rate, we can just use timeElsped/(totalNumberOfPacketReceived)
 
 ###Questions
 1. long is 32-bit?
 2. there are times losing the 'E' packet. only lost this packet won't lost other ones
+3. How to get sender address in the receiver side?

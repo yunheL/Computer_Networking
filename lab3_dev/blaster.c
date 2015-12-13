@@ -57,38 +57,59 @@ int main(int argc, char *argv[])
   //int msg_size = atoi(argv[12]);
   int bytes_sent;
   int packet_number = atoi(argv[8]);
+
+  //construct packet
+  struct packet pkt0;
  
+  char *ptr;
+  long unsign_seq;
+  long prev_byte_sent;
+
+  unsign_seq = strtoul(argv[12], &ptr, 10);
+  printf("base seq is: %lu\n", unsign_seq);
+  pkt0.sequence = unsign_seq;
+  prev_byte_sent = 0;  
+
   int i = 0;
-  for(i = 0; i<packet_number;i++)
+  for(i = 0; i<packet_number + 1;i++)
   { 
-    //construct first packet
-    struct packet pkt0;
-    
-    if(i<packet_number-1)
-    {
-      pkt0.type = 'D';
-    }
-    else
+    //if this is already packet_num packet sent, this 
+    //should be the END packet
+    if(i == packet_number)
     {
       pkt0.type = 'E';
     }
-    //work on sequence wrap around
-    //printf("argv[12]is: %d\n", (atoi(argv[12])));
-    
-    char *ptr;
-    long unsign_seq;
+    //otherwise it should be either D or C based on
+    //the passed in echo value 
+    else if(i < packet_number)
+    {
+      //if echo == 1
+      if(atoi(argv[14]) == 1)
+      {
+	pkt0.type = 'C';
+      }
+      //if echo == 0
+      else
+      {
+	pkt0.type = 'D';
+      }	 
+    }
+    //if i gets larger than packet_number then we
+    //have a problem 
+    else
+    {
+      error("error in determining pakcet type");
+    }
 
-    unsign_seq = strtoul(argv[12], &ptr, 10);
-    printf("base seq is: %lu\n", unsign_seq);
+    pkt0.sequence = pkt0.sequence + prev_byte_sent;
 
-
-    pkt0.sequence = unsign_seq + i;
     memset(pkt0.payload, 0, sizeof pkt0.payload);
     //strcpy(pkt0.payload, "This this is packet ");
     //TODO double check this number
     //memcpy(pkt0.payload+21, &i, 4);
     sprintf(pkt0.payload, "This is pakcet%d", i);
     pkt0.length = strlen(pkt0.payload);
+    prev_byte_sent = pkt0.length;
 
    //copy pkt0 into buffer
     memcpy(buffer, &pkt0.type, 1);
