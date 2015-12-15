@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
   
    
 
-  // construct a packet:   
+  // sender: construct a packet w/ only seq#:   
   char buf[4];
   struct packet pkt;
   pkt.sequence = 10;

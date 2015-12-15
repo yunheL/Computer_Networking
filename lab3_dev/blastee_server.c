@@ -84,7 +84,12 @@ int main(int argc, char *argv[])
     {
       error("error: recsive < 0");
     }
-    
+
+
+
+
+    // receiver side: only receive seq#:wq
+
 	uint32_t recv;
 	uint32_t recv_decode;
 	memcpy(&recv, &buffer, 4);
@@ -93,6 +98,10 @@ int main(int argc, char *argv[])
     printf("recv: %d\n", recv);
 	printf("recv_decode: %d\n", recv_decode);
   }
+
+
+
+
 
   close(blastee_socket);
   //TODO: return 0 for now, modify later
