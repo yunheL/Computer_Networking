@@ -154,7 +154,7 @@ int main(int argc, char *argv[])
     printf("at time: %lu.%03lu, ", stamp.tv_sec, stamp.tv_usec/1000);
     printf("payload: ");
     int i = 0;
-    for(i = 0; i < 32; i++)
+    for(i = 0; i < 4; i++)
     {
       printf("%c", payload[i]);
     }

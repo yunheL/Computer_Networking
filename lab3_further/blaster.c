@@ -25,6 +25,7 @@ void *connection_handler(void *);
 
 int main(int argc, char *argv[])
 {
+  uint32_t pkt_len = atoi(argv[12]);
 
   //this struct construct the packet to be sent
   struct packet
@@ -32,7 +33,8 @@ int main(int argc, char *argv[])
     char 	type;			//D = DATA, E = END, C = ECHO
     long 	sequence;	//increase in the number of payload octets
     uint32_t	length;			//number of octets in the payload
-    char	payload[atoi(argv[12])];	//vaiable size
+    //char 	payload[12];
+    char	payload[pkt_len];	//vaiable size
     //char 	payload[50*1024 + 36];
   };
 
@@ -141,10 +143,12 @@ int main(int argc, char *argv[])
     }
 
     //stuff pkt0
-    pkt0.sequence = pkt0.sequence + prev_byte_sent;
+    pkt0.sequence = pkt0.sequence + pkt_len;
     memset(pkt0.payload, 0, sizeof pkt0.payload);
+
     sprintf(pkt0.payload, "This is pakcet%d", i);
-    pkt0.length = strlen(pkt0.payload);
+    //pkt0.length = strlen(pkt0.payload);
+    pkt0.length = pkt_len;
 
     //record prev_byte_sent to update sequence number
     prev_byte_sent = pkt0.length;
@@ -157,7 +161,7 @@ int main(int argc, char *argv[])
     uint32_t len;
     len = htonl(pkt0.length);
     memcpy(buffer+5, &len, 4);
-    memcpy(buffer+9, &pkt0.payload, sizeof pkt0.payload);
+    memcpy(buffer+9, &pkt0.payload, pkt_len);
 
     //before send sleep for certain amound of time  
     time_t sec_wait = 0;
@@ -231,8 +235,23 @@ int main(int argc, char *argv[])
     */
     printf("sequence= %lu, ", pkt0.sequence);
     //printf("length= %d, ", pkt0.length);
-    printf("payload= %.*s", 32,pkt0.payload); 
-    printf("\n");
+    //printf("payload= %.*s", 4,pkt0.payload);
+    printf("payload: ");
+
+    int plen = 4;
+    int k = 0;
+    if(pkt_len <  4)
+    {
+      plen = pkt_len;
+    }
+    
+
+    for(k = 0; k < plen; k++)
+    {
+      printf("%c", pkt0.payload[k]);
+    }
+    printf("\n"); 
+    //printf("\n");
 
     //listening when expecting echo
     if(atoi(argv[14]) == 1)
@@ -274,10 +293,10 @@ int main(int argc, char *argv[])
       printf("length: %d, ", echo_length);
 
       printf("payload: ");
-      int i = 0;
-      for(i = 0; i < 32; i++)
+      int j = 0;
+      for(j = 0; j < 4; j++)
       {
-	printf("%c", echo_payload[i]);
+	printf("%c", echo_payload[j]);
       }
       printf("\n");
       
