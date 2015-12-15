@@ -11,14 +11,17 @@
 #include <errno.h>
 #include <sys/types.h>
 #include <time.h>
+#include <pthread.h>
 
 #define EVER ;;
 //function that generates error message
 void error(const char *msg)
 {
   perror(msg);
-  exit(1);
+  exit(-1);
 }
+
+void *connection_handler(void *);
 
 int main(int argc, char *argv[])
 {
@@ -38,39 +41,69 @@ int main(int argc, char *argv[])
     error("Blaster command line argument number error\n");
     exit(1);
   }  
+  printf("host to send to: %s, port on receiver: %s\n", argv[2], argv[4]);
 
-  printf("host: %s, port: %s\n", argv[2], argv[4]);
   //instantiate the udp socket
-  //socket(AF_INET, socket_type, protocol),read more on Man page
   int blaster_socket;
   blaster_socket = socket(AF_INET, SOCK_DGRAM, 0);
   if(-1 == blaster_socket)
   {
     error("socekt create failed");
   }
-  //struct sockaddr_in sa;
+
+  //set blaster_sa address
+  struct sockaddr_in blaster_sa;
+  socklen_t blaster_sa_len;
+
+  memset(&blaster_sa, 0, sizeof blaster_sa);
+  blaster_sa.sin_family = AF_INET;
+  blaster_sa.sin_addr.s_addr = htonl(INADDR_ANY);
+  blaster_sa.sin_port = htons(atoi(argv[4])); 
+  blaster_sa_len = sizeof(blaster_sa);
+
+
+  //set blastee_sa address
   struct sockaddr_in blastee_sa;
-  //data byte count
-  socklen_t fromlen;
-  //ssize_t recvsize;
+  socklen_t blastee_sa_len;
+
+  memset(&blastee_sa, 0, sizeof blastee_sa);
+  blastee_sa.sin_family = AF_INET;
+  blastee_sa.sin_addr.s_addr = inet_addr(argv[2]);
+  blastee_sa.sin_port = htons(atoi(argv[4])); 
+  blastee_sa_len = sizeof(blastee_sa);
+
+
+  if(-1 == bind(blaster_socket, (struct sockaddr *)&blaster_sa, blaster_sa_len))
+  {
+    close(blaster_socket);
+    error("bind failed");
+  }
+
+
+  //TODO instantiate buffer size according to input
   int buf_size = 50*1024 + 4*9; //as length < 50KB
   char buffer[buf_size];
+  char buffer_recv[buf_size];
   //int msg_size = atoi(argv[12]);
   int bytes_sent;
   int packet_number = atoi(argv[8]);
+  int pkt_count = 0;
 
   //construct packet
   struct packet pkt0;
 
+  //the sequence number mechanism is done here
   char *ptr;
   long unsign_seq;
   long prev_byte_sent;
 
-  unsign_seq = strtoul(argv[12], &ptr, 10);
+  unsign_seq = strtoul(argv[10], &ptr, 10);
   printf("base seq is: %lu\n", unsign_seq);
   pkt0.sequence = unsign_seq;
   prev_byte_sent = 0;  
 
+
+  //for loop to send packet
   int i = 0;
   for(i = 0; i<packet_number + 1;i++)
   { 
@@ -102,14 +135,13 @@ int main(int argc, char *argv[])
       error("error in determining pakcet type");
     }
 
+    //stuff pkt0
     pkt0.sequence = pkt0.sequence + prev_byte_sent;
-
     memset(pkt0.payload, 0, sizeof pkt0.payload);
-    //strcpy(pkt0.payload, "This this is packet ");
-    //TODO double check this number
-    //memcpy(pkt0.payload+21, &i, 4);
     sprintf(pkt0.payload, "This is pakcet%d", i);
     pkt0.length = strlen(pkt0.payload);
+
+    //record prev_byte_sent to update sequence number
     prev_byte_sent = pkt0.length;
 
     //copy pkt0 into buffer
@@ -122,27 +154,10 @@ int main(int argc, char *argv[])
     memcpy(buffer+5, &len, 4);
     memcpy(buffer+9, &pkt0.payload, sizeof pkt0.payload);
 
-    /*
-    //int i = 0;
-    for(i = 0; i < 100; i++)
-    {
-    printf("buffer[%d] is: %c\n", i, buffer[i]);
-    }
-    */
-    memset(&blastee_sa, 0, sizeof blastee_sa);
-
-    blastee_sa.sin_family = AF_INET;
-    blastee_sa.sin_addr.s_addr = inet_addr(argv[2]);
-    blastee_sa.sin_port = htons(atoi(argv[4])); 
-    //prinf("port number is : ");
-    fromlen = sizeof(blastee_sa);
-
-    //before send sleep for certain amound of time
-    
+    //before send sleep for certain amound of time  
     time_t sec_wait = 0;
     long nano_wait = 0;
     long raw_time = 0;
-
     double raw_rate = atof(argv[6]);
 
     if(raw_rate > 1.0)
@@ -160,8 +175,8 @@ int main(int argc, char *argv[])
 
       while(raw_time > 1000000000 || raw_time == 1000000000)
       {
-        raw_time = raw_time - 1000000000;
-        sec_wait = sec_wait + 1;
+	raw_time = raw_time - 1000000000;
+	sec_wait = sec_wait + 1;
       }
       nano_wait = (long)raw_time;
     }
@@ -173,24 +188,31 @@ int main(int argc, char *argv[])
     struct timespec time, time2;
     time.tv_sec = sec_wait;
     time.tv_nsec = nano_wait;
-    //time.tv_sec = 1;
-    //time.tv_nsec = 0;
 
 
     if(nanosleep(&time, &time2) < 0 )   
     {
       error("nanosleep() failed");
+      //time.tv_nsec = 0;
     }
     else
     {
       printf("Nano sleep successfull \n"); 
     }
 
+    //this is where the packet get sent
     bytes_sent = sendto(blaster_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
 
+    if(bytes_sent < 0)
+    {
+      error("bytes_sent < 0\n");
+    }
 
+
+    /*print statments to display information */
     printf("sent to host %s, port %hd, ",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
     printf("bytes_sent is %d\n", bytes_sent);
+
 
     printf("sent packet: ");
     printf("data = %c, ", pkt0.type);
@@ -205,11 +227,103 @@ int main(int argc, char *argv[])
     printf("payload= %s, ", pkt0.payload); 
     printf("\n");
 
-    if(bytes_sent < 0)
+    //int *new_sock;
+    //int client_sock;
+    //pthread_t receive_thread;
+    //new_sock = malloc(1);
+    //*new_sock = blaster_socket;
+
+/*
+    if(atoi(argv[14]) == 1)
     {
-      error("bytes_sent < 0\n");
+      if(pthread_create(&receive_thread, NULL, connection_handler, (void*) new_sock) < 0)
+      {
+        error("thread creation failed");
+      }
     }
+*/
+
+    if(atoi(argv[14]) == 1)
+    {
+
+      pkt_count++;
+
+      if(pkt_count == atoi(argv[8])+1)
+      {
+	printf("Thanks for using Xuyi & Yunhe Socket!\n");
+        break;
+      }
+ 
+      printf("here1\n");
+      ssize_t recsize = 0;
+      recsize = recvfrom(blaster_socket, (void*)buffer_recv, sizeof buffer_recv, 0, (struct sockaddr*)&blaster_sa, &blaster_sa_len);
+      printf("here2\n");
+      printf("receive success! ");
+      printf("recsize = %d\n", recsize);
+
+
+    
+      /*
+      char type;
+      memcpy(&type, buffer_recv, 1);
+
+      if (type == 'E')
+      {
+	printf("Thanks for using Xuyi & Yunhe Socket!\n");
+        break;
+      }
+      */
+
+/*
+      if(pthread_create(&receive_thread, NULL, connection_handler, (void*) new_sock) < 0)
+      {
+        error("thread creation failed");
+      }
+*/
+    }
+
+
+
   }//end of for for sending pakcets
+
+
+
+
   close(blaster_socket);
   return 0;
 }
+
+
+/*
+void *connection_handler(void *blaster_socket)
+{
+  int sock = *(int*) blaster_socket;
+  //char *buff;
+  char rec_buff[36+50*1024];
+
+  struct sockaddr_in blastee_sa;
+  socklen_t blastee_sa_len;
+
+  memset(&blastee_sa, 0, sizeof blastee_sa);
+  blastee_sa.sin_family = AF_INET;
+  blastee_sa.sin_addr.s_addr = inet_addr("128.105.37.165");
+  blastee_sa.sin_port = htons(7001); 
+  blastee_sa_len = sizeof(blastee_sa);
+
+
+//  if(atoi(argv[14]) == 1)
+//  {
+    ssize_t recsize = 0;
+    recsize = recvfrom(sock, (void*)rec_buff, sizeof rec_buff, 0, (struct sockaddr*)&blastee_sa, &blastee_sa_len);
+
+    printf("receive success! ");
+    printf("recsize = %d\n", recsize);
+//  }
+
+    free(blaster_socket);
+    return 0;
+
+}
+*/
+
+

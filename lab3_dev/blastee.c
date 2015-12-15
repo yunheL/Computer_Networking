@@ -14,11 +14,13 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+#include <time.h>
 
+//function to print out error msg
 void error(const char *msg)
 {
   perror(msg);
-  exit(1);
+  exit(-1);
 }
 
 int main(int argc, char *argv[])
@@ -32,11 +34,12 @@ int main(int argc, char *argv[])
   printf("port number is: %s + echo is: %s\n", argv[2], argv[4]);
 
   int blastee_socket;
-  struct sockaddr_in sa;
   char buffer[50*1024 + 4*9];
-  //char send_buff[50*1024 + 4*9];
   ssize_t recsize;
   socklen_t fromlen;
+
+  //set blastee sa
+  struct sockaddr_in sa;
 
   /* create an UDP socket*/
   if(-1 == (blastee_socket = socket(AF_INET, SOCK_DGRAM, 0)))
@@ -50,15 +53,29 @@ int main(int argc, char *argv[])
   //TODO what is the INADDR_ANY here
   //sa.sin_addr.s_addr = inet_addr("128.105.37.194");
   sa.sin_addr.s_addr = htonl(INADDR_ANY);
-  
-  printf("binding to address: %s", inet_ntoa(sa.sin_addr));
+
+  //printf("binding to address\n: %s", inet_ntoa(sa.sin_addr));
   sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
+
+  //TODO
+  struct sockaddr_in blaster_sa; 
+  //char send_buff[50*1024 + 4*9];
+  //int port_num = 7000;
+
+  blaster_sa.sin_family = AF_INET;
+  //blaster_sa.sin_addr.s_addr = sa.sin_addr.s_addr;
+  //blaster_sa.sin_addr.s_addr = inet_addr(inet_ntoa(sa.sin_addr));
+  //printf("TEST: %s", inet_ntoa(sa.sin_addr));
+  blaster_sa.sin_port = htons(atoi(argv[2]));
+
+
+  //printf("From host %s, port %hd, ",inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 
   /* bind socket to address */
   if(-1 == bind(blastee_socket, (struct sockaddr *) &sa, fromlen))
   {
-     error("bind() failed\n");
+    error("bind() failed\n");
   }
 
   struct timeval tv;
@@ -70,17 +87,44 @@ int main(int argc, char *argv[])
   {
     error("ERROR: setsockopt error");
   }
-  
+
   /* keep receiving */
   //TODO implement END mechanism
   for (;;)
   {
-    //fflush(stdout);
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);
- 
+
     printf("receive success! ");
     printf("recsize = %d\n", recsize);
-    
+    /*
+    // assume s is a connected socket
+    socklen_t len;
+    struct sockaddr_storage addr;
+    char ipstr[INET6_ADDRSTRLEN];
+    int port;
+
+    len = sizeof addr;
+    if(-1 == getpeername(blastee_socket, (struct sockaddr*)&addr, &len))
+    {
+    error("ERROR: getpeername() failed!");
+    }
+
+    if (addr.ss_family == AF_INET) 
+    {
+    struct sockaddr_in *blastee_socket = (struct sockaddr_in *)&addr;
+    port = ntohs(blastee_socket->sin_port);
+    inet_ntop(AF_INET, &blastee_socket->sin_addr, ipstr, sizeof ipstr);
+    } 
+    else 
+    { // AF_INET6
+    struct sockaddr_in6 *blastee_socket = (struct sockaddr_in6 *)&addr;
+    port = ntohs(blastee_socket->sin6_port);
+    inet_ntop(AF_INET6, &blastee_socket->sin6_addr, ipstr, sizeof ipstr);
+    }
+
+    printf("Peer IP address: %s\n", ipstr);
+    */
+
     if(recsize < 0)
     {
       error("error: recsive < 0, this can happen after 5 sec timeout\n");
@@ -110,7 +154,7 @@ int main(int argc, char *argv[])
     printf("data= %c, ", data);
     printf("sequence= %lu, ", sequence);
     printf("length: %d, ", length);
-    
+
     printf("payload: ");
     int i = 0;
     for(i = 0; i < 32; i++)
@@ -118,10 +162,40 @@ int main(int argc, char *argv[])
       printf("%c", payload[i]);
     }
     printf("\n");
-   
+
     if(data == 'C')
     {
-      printf("this packet should be echoed\n"); 
+/*
+      struct timespec time, time2;
+      time.tv_sec = 0;
+      time.tv_nsec = 500L;
+
+
+      if(nanosleep(&time, &time2) < 0 )
+      {
+	error("nanosleep() failed");
+	time.tv_nsec = 0;
+      }
+      else
+      {
+	printf("Nano sleep successfull \n");
+      }
+*/
+
+      //printf("this packet should be echoed\n");
+      int bytes_sent = 0;
+
+      blaster_sa.sin_addr.s_addr = inet_addr(inet_ntoa(sa.sin_addr));
+      printf("TEST: %s", inet_ntoa(sa.sin_addr));
+      //prtinf("TESTPORT: %hd", ntohs(sa.sin_port));
+
+      bytes_sent = sendto(blastee_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blaster_sa, sizeof blaster_sa);
+
+
+
+      printf("sent to host %s, port %hd, ",inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
+      printf("bytes_sent is %d\n", bytes_sent);
+
     }
     else if (data == 'E')
     {
@@ -132,13 +206,13 @@ int main(int argc, char *argv[])
 
   if (-1 == close(blastee_socket))
   {
-     error("Oops, close() failed");
+    error("Oops, close() failed");
   }
   else
   {
-     printf("Your socket has been successfully closed, thanks for using Xuyi-Yunhe socket!\n");
+    printf("Your socket has been successfully closed, thanks for using Xuyi-Yunhe socket!\n");
   }
-  
+
   //TODO: return 0 for now, modify later
   return 0;
 }
