@@ -96,8 +96,10 @@ Successfully connection between blaster.c and blastee.c
 3.implment sending rate functonality (done) 
 4.blastee and blaster print formatting check  
 5.blastee timeout(done)  
-6.set buffer size according to input value  
-7.use getopt so input value sequence does not matter anymore  
+6.set buffer size according to input value (done)
+7.use getopt so input value sequence does not matter anymore(extra task)
+8.blaster never send 'C'(done)
+9.echo back END packet (done) 
 
 ###TIPS: Can use nanosleep to do send rate control. At receiver side, when want to print the average sending rate, we can just use timeElsped/(totalNumberOfPacketReceived)
 

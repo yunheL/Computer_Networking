@@ -200,10 +200,12 @@ int main(int argc, char *argv[])
       error("nanosleep() failed");
       //time.tv_nsec = 0;
     }
+/*
     else
     {
       printf("Nano sleep successfull \n"); 
     }
+*/
 
     //this is where the packet get sent
     bytes_sent = sendto(blaster_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blastee_sa, sizeof blastee_sa);
@@ -232,22 +234,7 @@ int main(int argc, char *argv[])
     printf("payload= %s, ", pkt0.payload); 
     printf("\n");
 
-    //int *new_sock;
-    //int client_sock;
-    //pthread_t receive_thread;
-    //new_sock = malloc(1);
-    //*new_sock = blaster_socket;
-
-/*
-    if(atoi(argv[14]) == 1)
-    {
-      if(pthread_create(&receive_thread, NULL, connection_handler, (void*) new_sock) < 0)
-      {
-        error("thread creation failed");
-      }
-    }
-*/
-
+    //listening when expecting echo
     if(atoi(argv[14]) == 1)
     {
 

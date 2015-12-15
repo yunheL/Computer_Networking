@@ -47,28 +47,24 @@ int main(int argc, char *argv[])
     error("Socket() failed\n");
   }
 
-  /* set socket parameter */
+  /* set blastee socket parameter */
+  //Note: blastee has the addr struct sa
   memset(&sa, 0, sizeof sa);
   sa.sin_family = AF_INET;
-  //TODO what is the INADDR_ANY here
-  //sa.sin_addr.s_addr = inet_addr("128.105.37.194");
   sa.sin_addr.s_addr = htonl(INADDR_ANY);
-
   //printf("binding to address\n: %s", inet_ntoa(sa.sin_addr));
   sa.sin_port = htons(atoi(argv[2]));
   fromlen = sizeof(sa);
 
-  //TODO
+  /* set blaster socket parameter*/
+  //Note: blaster has the addr struct blaster_sa
   struct sockaddr_in blaster_sa; 
-  //char send_buff[50*1024 + 4*9];
-  //int port_num = 7000;
 
   blaster_sa.sin_family = AF_INET;
   //blaster_sa.sin_addr.s_addr = sa.sin_addr.s_addr;
   //blaster_sa.sin_addr.s_addr = inet_addr(inet_ntoa(sa.sin_addr));
   //printf("TEST: %s", inet_ntoa(sa.sin_addr));
   blaster_sa.sin_port = htons(atoi(argv[2]));
-
 
   //printf("From host %s, port %hd, ",inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
 
@@ -78,6 +74,7 @@ int main(int argc, char *argv[])
     error("bind() failed\n");
   }
 
+  /*5sec timeout*/
   struct timeval tv;
 
   tv.tv_sec = 5;  /* 5 Secs Timeout */
@@ -89,59 +86,25 @@ int main(int argc, char *argv[])
   }
 
   /* keep receiving */
-  //TODO implement END mechanism
   for (;;)
   {
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);
 
     printf("receive success! ");
     printf("recsize = %d\n", recsize);
-    /*
-    // assume s is a connected socket
-    socklen_t len;
-    struct sockaddr_storage addr;
-    char ipstr[INET6_ADDRSTRLEN];
-    int port;
-
-    len = sizeof addr;
-    if(-1 == getpeername(blastee_socket, (struct sockaddr*)&addr, &len))
-    {
-    error("ERROR: getpeername() failed!");
-    }
-
-    if (addr.ss_family == AF_INET) 
-    {
-    struct sockaddr_in *blastee_socket = (struct sockaddr_in *)&addr;
-    port = ntohs(blastee_socket->sin_port);
-    inet_ntop(AF_INET, &blastee_socket->sin_addr, ipstr, sizeof ipstr);
-    } 
-    else 
-    { // AF_INET6
-    struct sockaddr_in6 *blastee_socket = (struct sockaddr_in6 *)&addr;
-    port = ntohs(blastee_socket->sin6_port);
-    inet_ntop(AF_INET6, &blastee_socket->sin6_addr, ipstr, sizeof ipstr);
-    }
-
-    printf("Peer IP address: %s\n", ipstr);
-    */
-
     if(recsize < 0)
     {
       error("error: recsive < 0, this can happen after 5 sec timeout\n");
     }
 
+    /* extract data from buffer and decode*/
     char data;
     memcpy(&data, buffer, 1);    
 
-    //char seq[4];
-    //memcpy(seq, buffer+1, 4);
     long sequence;
     memcpy(&sequence, buffer+1, 4);
     sequence = ntohl(sequence);
-    //sequence = atoi(*seq);
 
-    //char len[4];
-    //memcpy(len, buffer+5, 4);
     uint32_t length;
     memcpy(&length, buffer+5, 4);
     length = ntohl(length);
@@ -163,6 +126,7 @@ int main(int argc, char *argv[])
     }
     printf("\n");
 
+    /* echo mechanism */
     if(atoi(argv[4]) == 1)
     {
 /*
@@ -183,29 +147,32 @@ int main(int argc, char *argv[])
 */      
       //printf("this packet should be echoed\n");
 
+      //label packet as echo packet
       char type = 'C';
       memcpy(buffer, &type, 1);
       int bytes_sent = 0;
 
+      //set address to send to
       blaster_sa.sin_addr.s_addr = inet_addr(inet_ntoa(sa.sin_addr));
       printf("TEST: %s", inet_ntoa(sa.sin_addr));
       //prtinf("TESTPORT: %hd", ntohs(sa.sin_port));
 
+      //send out the echo packet
       bytes_sent = sendto(blastee_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blaster_sa, sizeof blaster_sa);
-
-
 
       printf("sent to host %s, port %hd, ",inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
       printf("bytes_sent is %d\n", bytes_sent);
 
     }
+  
+    //END mechanism
     if (data == 'E')
     {
       break;
     }
   }//end of for loop of receving packet
 
-
+  //close the socket
   if (-1 == close(blastee_socket))
   {
     error("Oops, close() failed");
@@ -215,6 +182,5 @@ int main(int argc, char *argv[])
     printf("Your socket has been successfully closed, thanks for using Xuyi-Yunhe socket!\n");
   }
 
-  //TODO: return 0 for now, modify later
   return 0;
 }
