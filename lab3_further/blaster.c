@@ -217,12 +217,12 @@ int main(int argc, char *argv[])
 
 
     /*print statments to display information */
-    printf("sent to host %s, port %hd, ",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
-    printf("bytes_sent is %d\n", bytes_sent);
+    //printf("sent to host %s, port %hd, ",inet_ntoa(blastee_sa.sin_addr), ntohs(blastee_sa.sin_port));
+    //printf("bytes_sent is %d\n", bytes_sent);
 
 
-    printf("sent packet: ");
-    printf("data = %c, ", pkt0.type);
+//    printf("sent packet: ");
+    printf("type = %c, ", pkt0.type);
     /*
     //this is the encrypted set for testing
     printf("sequence is %d, ", seq);
@@ -230,8 +230,8 @@ int main(int argc, char *argv[])
     printf("payload is %s\n", pkt0.payload);
     */
     printf("sequence= %lu, ", pkt0.sequence);
-    printf("length= %d, ", pkt0.length);
-    printf("payload= %s, ", pkt0.payload); 
+    //printf("length= %d, ", pkt0.length);
+    printf("payload= %.*s", 32,pkt0.payload); 
     printf("\n");
 
     //listening when expecting echo
@@ -246,15 +246,41 @@ int main(int argc, char *argv[])
         break;
       }
  
-      printf("here1\n");
+      //printf("here1\n");
       ssize_t recsize = 0;
       recsize = recvfrom(blaster_socket, (void*)buffer_recv, sizeof buffer_recv, 0, (struct sockaddr*)&blaster_sa, &blaster_sa_len);
-      printf("here2\n");
-      printf("receive success! ");
-      printf("recsize = %d\n", recsize);
+      //printf("here2\n");
+      //printf("receive success! ");
+      //printf("recsize = %d\n", recsize);
 
+      char echo_type;
+      memcpy(&echo_type, buffer_recv, 1);
 
-    
+      long echo_sequence;
+      memcpy(&echo_sequence, buffer_recv+1, 4);
+      echo_sequence = ntohl(echo_sequence);
+
+      uint32_t echo_length;
+      memcpy(&echo_length, buffer_recv+5, 4);
+      echo_length = ntohl(echo_length);
+
+      char echo_payload[50*1024];
+      memcpy(echo_payload, buffer_recv+9, 50*1024);
+
+      //printf("received packet: [echo] ");
+      printf("[echo] ");
+      printf("type= %c, ", echo_type);
+      printf("sequence= %lu, ", echo_sequence);
+      printf("length: %d, ", echo_length);
+
+      printf("payload: ");
+      int i = 0;
+      for(i = 0; i < 32; i++)
+      {
+	printf("%c", echo_payload[i]);
+      }
+      printf("\n");
+      
       /*
       char type;
       memcpy(&type, buffer_recv, 1);

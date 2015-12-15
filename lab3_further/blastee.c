@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <time.h>
+#include <sys/ioctl.h>
 
 //function to print out error msg
 void error(const char *msg)
@@ -37,6 +38,19 @@ int main(int argc, char *argv[])
   char buffer[50*1024 + 4*9];
   ssize_t recsize;
   socklen_t fromlen;
+
+  //summary info
+  float total_bytes = 0;
+  float total_pkts = 0;
+  float duration = 0;
+  int first_time = 1;
+  time_t initial_sec = 0;
+  long initial_usec = 0;
+  time_t end_sec = 0;
+  long end_usec = 0;
+  time_t dur_sec = 0;
+  long dur_usec = 0;
+  int more_than_one = 0;
 
   //set blastee sa
   struct sockaddr_in sa;
@@ -90,13 +104,31 @@ int main(int argc, char *argv[])
   {
     recsize = recvfrom(blastee_socket, (void*)buffer, sizeof buffer, 0, (struct sockaddr*)&sa, &fromlen);
 
-    printf("receive success! ");
-    printf("recsize = %d\n", recsize);
+    struct timeval stamp;
+    
+    ioctl(blastee_socket, SIOCGSTAMP, &stamp);
+
+    //printf("TEST: %lu, %lu,", stamp.tv_sec, stamp.tv_usec);
+
+    //printf("receive success! ");
+    //printf("recsize = %d\n", recsize);
+
+
+/*    
     if(recsize < 0)
     {
-      error("error: recsive < 0, this can happen after 5 sec timeout\n");
+      error("resive size < 0");
+      
+      error(
+      "Summary:\ntotal packets received: %d\n,total bytes received: %d\n,average byte/sec: %f\n,average packet/sec: %f\n,duration is: %lu.%03lu sec\n, error: recsive < 0, this can happen after 5 sec timeout\n",total_pkts, total_bytes, (float)(total_bytes)/duration,(float)(total_pkts)/duration, dur_sec, dur_usec/1000);
+    
     }
+*/
 
+    if(recsize < 0)
+    {
+      break;
+    }
     /* extract data from buffer and decode*/
     char data;
     memcpy(&data, buffer, 1);    
@@ -112,12 +144,14 @@ int main(int argc, char *argv[])
 
     char payload[50*1024];
     memcpy(payload, buffer+9, 50*1024);
-
-    printf("received packet: ");
-    printf("data= %c, ", data);
+    
+    
+    printf("From: %s, on port: %hd, ",inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
+    //printf("received packet: ");
+    //printf("data= %c, ", data);
     printf("sequence= %lu, ", sequence);
-    printf("length: %d, ", length);
-
+    printf("size: %d, ", length);
+    printf("at time: %lu.%03lu, ", stamp.tv_sec, stamp.tv_usec/1000);
     printf("payload: ");
     int i = 0;
     for(i = 0; i < 32; i++)
@@ -125,6 +159,29 @@ int main(int argc, char *argv[])
       printf("%c", payload[i]);
     }
     printf("\n");
+
+    total_bytes = total_bytes + length;
+    total_pkts++;
+
+    if(first_time == 1)
+    {
+      first_time = 0;
+      initial_sec = stamp.tv_sec;
+      initial_usec = stamp.tv_usec;
+    }
+    else
+    {
+      more_than_one = 1;
+      end_sec = stamp.tv_sec;
+      end_usec = stamp.tv_usec;
+    }
+
+    //calculate duration
+    dur_sec = end_sec - initial_sec;
+    dur_usec = end_usec - initial_usec;
+    duration = (float)dur_sec + (float)(dur_usec)/1000000.0;      
+
+
 
     /* echo mechanism */
     if(atoi(argv[4]) == 1)
@@ -154,14 +211,13 @@ int main(int argc, char *argv[])
 
       //set address to send to
       blaster_sa.sin_addr.s_addr = inet_addr(inet_ntoa(sa.sin_addr));
-      printf("TEST: %s", inet_ntoa(sa.sin_addr));
+      //printf("TEST: %s", inet_ntoa(sa.sin_addr));
       //prtinf("TESTPORT: %hd", ntohs(sa.sin_port));
 
       //send out the echo packet
       bytes_sent = sendto(blastee_socket, buffer, sizeof buffer, 0, (struct sockaddr*)&blaster_sa, sizeof blaster_sa);
 
-      printf("sent to host %s, port %hd, ",inet_ntoa(sa.sin_addr), ntohs(sa.sin_port));
-      printf("bytes_sent is %d\n", bytes_sent);
+      //printf("bytes_sent is %d\n", bytes_sent);
 
     }
   
@@ -172,6 +228,25 @@ int main(int argc, char *argv[])
     }
   }//end of for loop of receving packet
 
+  printf("Summary: \n");
+  printf("total packets received(include END): %.0f\n", total_pkts);
+  printf("total bytes received: %.0f\n", total_bytes);
+  if(more_than_one == 1)
+  { 
+    printf("average byte/sec: %f\n", total_bytes/duration);
+    printf("average packet/sec: %f\n", total_pkts/duration);
+    printf("duration is: %lu.%03lu sec\n", dur_sec, dur_usec/1000);
+  }
+  else
+  {
+    printf("average byte/sec: less than or only 1 packet\n");
+    printf("average packet/sec: less than or only 1 packet\n");
+    printf("duration is so small for this case\n");
+  }
+
+  printf("**reason packet/rate is different from rate in param is because END pakcet is included in calculation. If use packet -1 (excluding END), then it will be the same as rate in param\n");
+
+
   //close the socket
   if (-1 == close(blastee_socket))
   {
@@ -179,7 +254,7 @@ int main(int argc, char *argv[])
   }
   else
   {
-    printf("Your socket has been successfully closed, thanks for using Xuyi-Yunhe socket!\n");
+    printf("-Your socket has been successfully closed, thanks for using Xuyi-Yunhe socket!\n");
   }
 
   return 0;
