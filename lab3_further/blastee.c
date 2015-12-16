@@ -184,12 +184,14 @@ int main(int argc, char *argv[])
 
 
     /* echo mechanism */
+
     if(atoi(argv[4]) == 1)
     {
+
 /*
       struct timespec time, time2;
       time.tv_sec = 0;
-      time.tv_nsec = 500L;
+      time.tv_nsec = 500000000L;
 
 
       if(nanosleep(&time, &time2) < 0 )

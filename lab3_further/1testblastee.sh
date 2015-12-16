@@ -1,1 +1,1 @@
-blastee -p 7017 -c 1
+blastee -p 7022 -c 1
